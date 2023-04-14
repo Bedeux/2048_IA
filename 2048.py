@@ -3,156 +3,8 @@ from tkinter import messagebox
 import random
 import time
 from PIL import ImageGrab
+from Board import Board
 
-
-
-class Board:
-    bgColor = {
-        '2': '#eee4da',
-        '4': '#2B89C6',
-        '8': '#22CC7E',
-        '16':'#E6358B',
-        '32':'#CE5404',
-        '64':'#F47070',
-        '128': '#65A549',
-        '256': '#F27C4F',
-        '512': '#2ecc72',
-        '1024': '#EEC213',
-        '2048':'#FF3031',	
-        
-    }
-    color={
-         '2': '#0045BE',
-        '4': '#f9f6f2',
-        '8': '#f9f6f2',
-        '16': '#f9f6f2',
-        '32': '#f9f6f2',
-        '64': '#f9f6f2',
-        '128': '#f9f6f2',
-        '256': '#f9f6f2',
-        '512': '#776e65',
-        '1024': '#f9f6f2',
-        '2048': '#f9f6f2',
-    }
-    
-    def __init__(self):
-        self.n=4
-        self.window = Tk()   #main tkinter window
-        self.window.title('2048 Game')
-        
-        #tkinter frame widget
-        self.gameArea = Frame(self.window, bg = 'azure3')
-        self.board = []   #4x4 grid which displays the value
-        self.gridCell = [[0]*4 for i in range(4)] #4x4 intgr matrix which displays the value of the cell
-        self.compress = False
-        self.merge = False
-        self.moved = False
-        self.score = 0   #stroe the score of player
-        
-        for i in range(4):
-            rows = []
-            for j in range(4):
-                l = Label(self.gameArea, text = '', bg='azure4',
-                          font = ('arial',22,'bold'), width=4, height=2)
-                l.grid(row = i, column=j, padx=7, pady=7)
-                
-                rows.append(l);
-            self.board.append(rows)
-        self.gameArea.grid()
-       
-    #TODO: reverse the grid cell matrix 
-    def reverse(self):
-        for idx in range(4):
-            i = 0
-            j=3
-            while(i<j):
-                self.gridCell[idx][i], self.gridCell[idx][j] = self.gridCell[idx][j], self.gridCell[idx][i]
-                i+=1
-                j-=1
-                
-    #TODO: Function to transppose the gridMatrix
-    def transpose(self):
-        self.gridCell = [list(t) for t in zip(*self.gridCell)]
-        
-    
-    #TODO: Move non empty cell to the left
-    
-    def compressGrid (self):
-        self.compress = False
-        temp = [[0] * 4 for i in range(4)]
-        for i in range(4):
-            cnt  =0 
-            for j in range(4):
-                if self.gridCell[i][j]!=0:
-                    temp[i][cnt] = self.gridCell[i][j]
-                    
-                    if cnt!=j:
-                        self.compress = True
-                        
-                    cnt+=1
-                    
-        self.gridCell = temp
-        
-    #TODO: function to add the two same adjacent cell
-    def mergeGrid(self):
-        self.merge = False
-        for i in range(4):
-            for j in range(4-1):
-                if self.gridCell[i][j] == self.gridCell[i][j+1] and self.gridCell[i][j] !=0:
-                    self.gridCell[i][j] *=2
-                    self.gridCell[i][j+1] = 0
-                    self.score += self.gridCell[i][j]
-                    self.merge = True
-                        
-        
-        #TODO: randomly make a gridCell from 0 to value 2
-    def randomCell(self):
-        cells=[]
-            
-        #make all cells 0
-        for i in range(4):
-            for j in range(4):
-                if self.gridCell[i][j]==0:
-                    cells.append((i,j))
-             
-             # assign value to 2           
-        curr = random.choice(cells)
-        i = curr[0]
-        j = curr[1]
-        self.gridCell[i][j]=2
-                
-        
-        #TODO: function to check either we merge two cell or not
-    def canMerge(self):
-        for i in range(4):
-            for j in range(3):
-                if self.gridCell[i][j] == self.gridCell[i][j+1]:
-                    return True
-                    
-        for i in range(3):
-            for j in range(4):
-                if self.gridCell[i+1][j] == self.gridCell[i][j]:
-                    return True
-            
-        return False
-        
-        
-    #TODO: Assign color to each cell
-    def colorGrid(self):
-        for i in range(4):
-            for j in range(4):
-                if self.gridCell[i][j] ==0:
-                    self.board[i][j].config(text='', bg = 'azure4')
-                else:
-                    self.board[i][j].config(text=str(self.gridCell[i][j]), 
-                                            bg = self.bgColor.get(str(self.gridCell[i][j])),
-                                            fg = self.color.get(str(self.gridCell[i][j])))
-
-        
-        
-    
-    
-    
 class Game:
     def __init__(self, gamepanel):
         self.gamepanel = gamepanel
@@ -160,9 +12,6 @@ class Game:
         self.won = False
         self.last_move = 'None'
         self.have_moved = True
-        
-        
-    #TODO: Function to use at start of the game
         
     def start(self):
        self.gamepanel.randomCell()
@@ -172,15 +21,11 @@ class Game:
        self.linkKeys("t") # execute link keys without key pressed
        self.gamepanel.window.mainloop()
 
-    
-    #TODO: check for game won or not
     def linkKeys(self, event):
         #if game is won or end then simply return
         if self.end or self.won:
             return
-        
         #else
-
 
         pressedKey = self.best_choice()
 
@@ -221,16 +66,13 @@ class Game:
             pass
         
         self.gamepanel.colorGrid()
-        # print(self.gamepanel.score)
         
-        flag = 0
-                                
+        flag = 0        
         for i in range(4):
             for j in range(4):
                 if self.gamepanel.gridCell[i][j]==0:
                     flag=1
                     break
-                
         if not (flag or self.gamepanel.canMerge()):
             self.end = True
             print(str(self.gamepanel.score))
@@ -239,14 +81,11 @@ class Game:
             self.gamepanel.window.update_idletasks()
             self.gamepanel.window.update()
             self.take_screenshot()
-
-            
             self.gamepanel.window.after(1, lambda: self.gamepanel.window.destroy())
 
         if self.gamepanel.moved:
             self.have_moved = True
             self.gamepanel.randomCell()
-            
             
         self.gamepanel.colorGrid()
         self.linkKeys(event)
@@ -256,7 +95,6 @@ class Game:
          self.last_move = 'None'
         if self.have_moved is None:
             self.have_moved = True
-        # print(self.last_move)
         if self.have_moved :
             self.last_move = 'Down'
             self.have_moved = False
@@ -283,11 +121,9 @@ class Game:
         screenshot = ImageGrab.grab(bbox=(x,y,x2,y2))
         screenshot.save('./images/'+str(self.gamepanel.score)+'.png')
 
-
-
 start_time = time.time()
 n=0
-while n<10:
+while n<1:
     n+=1
     gamepanel = Board()
     game2048 = Game(gamepanel)
