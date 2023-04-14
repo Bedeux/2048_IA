@@ -166,10 +166,9 @@ class Game:
        self.gamepanel.randomCell()
        self.gamepanel.colorGrid()
        self.gamepanel.window.bind('<Key>', self.linkKeys)
+       self.linkKeys("test")
        self.gamepanel.window.mainloop()
-       
-       
-        
+
     
     #TODO: check for game won or not
     def linkKeys(self, event):
@@ -244,15 +243,18 @@ class Game:
                 
         if not (flag or self.gamepanel.canMerge()):
             self.end = True
-            messagebox.showinfo('2048', 'OOPS!! GAME OVER!')
-            print('over')
+            print(str(self.gamepanel.score))
+            # time.sleep(2)
+            # quit()
+            self.gamepanel.window.after(300, lambda: self.gamepanel.window.destroy())
             
         if self.gamepanel.moved:
             self.have_moved = True
             self.gamepanel.randomCell()
             
             
-        self.gamepanel.colorGrid()    
+        self.gamepanel.colorGrid()
+        self.linkKeys(event)
     
     def best_choice(self):
         if self.last_move is None:
@@ -278,7 +280,7 @@ class Game:
             return 'Up'
         return 'Down'
 
-
-gamepanel = Board()
-game2048 = Game(gamepanel)
-game2048.start()
+while True:
+    gamepanel = Board()
+    game2048 = Game(gamepanel)
+    game2048.start()
