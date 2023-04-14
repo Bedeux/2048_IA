@@ -1,6 +1,10 @@
 from tkinter import *
 from tkinter import messagebox
 import random
+import time
+from PIL import ImageGrab
+
+
 
 class Board:
     bgColor = {
@@ -55,7 +59,6 @@ class Board:
                 rows.append(l);
             self.board.append(rows)
         self.gameArea.grid()
-       
        
     #TODO: reverse the grid cell matrix 
     def reverse(self):
@@ -166,13 +169,12 @@ class Game:
        self.gamepanel.randomCell()
        self.gamepanel.colorGrid()
        self.gamepanel.window.bind('<Key>', self.linkKeys)
-       self.linkKeys("test")
+       self.linkKeys("t") # execute link keys without key pressed
        self.gamepanel.window.mainloop()
 
     
     #TODO: check for game won or not
     def linkKeys(self, event):
-        
         #if game is won or end then simply return
         if self.end or self.won:
             return
@@ -222,19 +224,7 @@ class Game:
         # print(self.gamepanel.score)
         
         flag = 0
-        
-        for i in range(4):
-            for j in range(4):
-                if(self.gamepanel.gridCell[i][j] == 2048):
-                    flag =1
-                    break
-                
-        if (flag==1):     #Game won
-            self.won = True
-            messagebox.showinfo('2048', message="Congo! You WOn The Game!!!")
-            print("won")
-            return
-        
+                                
         for i in range(4):
             for j in range(4):
                 if self.gamepanel.gridCell[i][j]==0:
@@ -244,10 +234,15 @@ class Game:
         if not (flag or self.gamepanel.canMerge()):
             self.end = True
             print(str(self.gamepanel.score))
-            # time.sleep(2)
-            # quit()
-            self.gamepanel.window.after(300, lambda: self.gamepanel.window.destroy())
+
+            # wait the window to appear and takes screenshots
+            self.gamepanel.window.update_idletasks()
+            self.gamepanel.window.update()
+            self.take_screenshot()
+
             
+            self.gamepanel.window.after(1, lambda: self.gamepanel.window.destroy())
+
         if self.gamepanel.moved:
             self.have_moved = True
             self.gamepanel.randomCell()
@@ -261,7 +256,7 @@ class Game:
          self.last_move = 'None'
         if self.have_moved is None:
             self.have_moved = True
-        print(self.last_move)
+        # print(self.last_move)
         if self.have_moved :
             self.last_move = 'Down'
             self.have_moved = False
@@ -279,8 +274,23 @@ class Game:
             self.have_moved = False
             return 'Up'
         return 'Down'
+    
+    def take_screenshot(self):
+        x = self.gamepanel.window.winfo_x() + 8
+        y = self.gamepanel.window.winfo_y() + 1
+        x2 =  x + self.gamepanel.window.winfo_width()
+        y2 =  y + self.gamepanel.window.winfo_height() + 30
+        screenshot = ImageGrab.grab(bbox=(x,y,x2,y2))
+        screenshot.save('./images/'+str(self.gamepanel.score)+'.png')
 
-while True:
+
+
+start_time = time.time()
+n=0
+while n<10:
+    n+=1
     gamepanel = Board()
     game2048 = Game(gamepanel)
     game2048.start()
+
+print("--- %s seconds ---" % (round(time.time() - start_time,1)))
