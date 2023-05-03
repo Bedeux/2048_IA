@@ -32,15 +32,15 @@ class Board:
     
     def __init__(self):
         self.n=4
-        self.window = Tk()   #main tkinter window
+        self.window = Tk()
         self.window.title('2048 AI - Bedeux')
         self.gameArea = Frame(self.window, bg = 'azure3')
-        self.board = []   #4x4 grid which displays the value
-        self.gridCell = [[0]*4 for i in range(4)] #4x4 intgr matrix which displays the value of the cell
+        self.board = []   
+        self.gridCell = [[0]*4 for i in range(4)]
         self.compress = False
         self.merge = False
         self.moved = False
-        self.score = 0   #stroe the score of player
+        self.score = 0
         
         for i in range(4):
             rows = []
@@ -73,12 +73,9 @@ class Board:
             for j in range(4):
                 if self.gridCell[i][j]!=0:
                     temp[i][cnt] = self.gridCell[i][j]
-                    
                     if cnt!=j:
                         self.compress = True
-                        
                     cnt+=1
-                    
         self.gridCell = temp
         
     def mergeGrid(self):
@@ -123,3 +120,17 @@ class Board:
                     self.board[i][j].config(text=str(self.gridCell[i][j]), 
                                             bg = self.bgColor.get(str(self.gridCell[i][j])),
                                             fg = self.color.get(str(self.gridCell[i][j])))
+
+    def get_all_random_cells(self):
+        cells=[]
+        for i in range(4):
+            for j in range(4):
+                if self.gridCell[i][j]==0:
+                    cells.append((i,j))       
+        return cells
+
+    def get_nb_empty_cells(self):
+        empty_cells = 0
+        for row in self.gridCell:
+            empty_cells += row.count(0)
+        return empty_cells
