@@ -45,13 +45,12 @@ class Game:
             self.gamepanel.window.update_idletasks()
             self.gamepanel.window.update()
             time.sleep(3)
-            self.take_screenshot()
+            # self.take_screenshot()
             self.gamepanel.window.after(1, lambda: self.gamepanel.window.destroy())
 
         if self.gamepanel.moved:
             self.have_moved = True
             self.gamepanel.random_cell()
-            #print(str(self.gamepanel.cell_grid)+"   "+str(self.gamepanel.get_nb_empty_cells())+"    "+str(self.gamepanel.get_all_random_cells())+"   "+str(self.get_possible_moves(self.gamepanel.cell_grid)))
             
         self.gamepanel.color_grid()
         self.linkKeys(event)

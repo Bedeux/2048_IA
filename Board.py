@@ -1,5 +1,6 @@
 from tkinter import *
 import random
+import copy
 
 class Board:
     bgColor = {
@@ -193,7 +194,19 @@ class Board:
             empty_cells += row.count(0)
         return empty_cells
     
+    def _backup(self):
+        self._backup_state = (copy.deepcopy(self.cell_grid), self.score)
+        
+    def _restore(self):
+        if self._backup_state is not None:
+            self.cell_grid, self.score = self._backup_state
+            self._backup_state = None
+
     def get_score_after_move(self, pressed_key):
-        current_board = self # Create a new instance to keep the original board unchanged
-        current_board.move(pressed_key)
-        return current_board.score
+        # Copy the object isn't possible (tkinter error with pickle), creating a new object wasn't performant
+        # So I back and restore the object after the move
+        self._backup()
+        self.move(pressed_key)
+        score = self.score
+        self._restore()
+        return score

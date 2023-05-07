@@ -26,7 +26,8 @@ class AI:
         return 'Down'
     
     def AI(self):
+        all_moves = {}
         for possibility in self.game.gamepanel.get_possible_moves():
             score = self.game.gamepanel.get_score_after_move(possibility)
-            print(possibility+": "+str(score))
+            print(possibility + ": "+str(score))
         print('\n')
