@@ -38,6 +38,7 @@ class Board:
         self.gameArea = Frame(self.window, bg = 'azure3')
         self.board = []   
         self.cell_grid = [[0]*4 for i in range(4)]
+        self.previous_grid = None
         self.compress = False
         self.merge = False
         self.moved = False
@@ -80,6 +81,7 @@ class Board:
         self.cell_grid = temp
 
     def move(self, pressed_key):
+        self.previous_grid = self.cell_grid
         if pressed_key == 'Up':
             self.transpose()
             self.compress_grid()
@@ -162,22 +164,18 @@ class Board:
 
     def get_possible_moves(self):
         moves = []
-        rows, cols = len(self.cell_grid), len(self.cell_grid[0])
-        for i in range(rows):
-            for j in range(cols):
-                if self.cell_grid[i][j] == 0:
-                    moves = ['Down', 'Left', 'Right', 'Up']
-                    return moves
-        for i in range(rows):
-            for j in range(cols):
-                if i > 0 and (self.cell_grid[i][j] == self.cell_grid[i-1][j] or self.cell_grid[i-1][j] == 0) and ('Up' not in moves):
-                    moves.append('Up')
-                if i < rows - 1 and (self.cell_grid[i][j] == self.cell_grid[i+1][j] or self.cell_grid[i+1][j] == 0) and ('Down' not in moves):
-                    moves.append('Down')
-                if j > 0 and (self.cell_grid[i][j] == self.cell_grid[i][j-1] or self.cell_grid[i][j-1] == 0) and ('Left' not in moves):
+        for i in range(4):
+            for j in range(3):
+                if self.cell_grid[i][j] == self.cell_grid[i][j + 1]:
                     moves.append('Left')
-                if j < cols - 1 and (self.cell_grid[i][j] == self.cell_grid[i][j+1] or self.cell_grid[i][j+1] == 0) and ('Right' not in moves):
                     moves.append('Right')
+                    break
+        for i in range(3):
+            for j in range(4):
+                if self.cell_grid[i][j] == self.cell_grid[i + 1][j]:
+                    moves.append('Up')
+                    moves.append('Down')
+                    break
         return moves
 
     def get_all_random_cells(self):
@@ -194,6 +192,22 @@ class Board:
             empty_cells += row.count(0)
         return empty_cells
     
+    def get_max_cell_value(self):
+        max_value = 0
+        for row in self.cell_grid:
+            for cell in row:
+                max_value = max(max_value, cell)
+        return max_value
+    
+    def get_score(self):
+        return self.score
+    
+    def get_cell_grid(self):
+        return self.cell_grid
+
+    def get_previous_grid(self):
+        return self.previous_grid
+
     def _backup(self):
         self._backup_state = (copy.deepcopy(self.cell_grid), self.score)
         

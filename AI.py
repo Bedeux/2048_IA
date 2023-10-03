@@ -1,6 +1,11 @@
 class AI:
     def __init__(self, game):
         self.game = game
+        self.grid = None
+        self.previous_grid = None
+        self.availabe_moves = []
+        self.empty_cells = -1
+        self.max_value_cell = 0
 
     def best_choice(self):
         if self.game.last_move is None:
@@ -24,10 +29,20 @@ class AI:
             self.game.have_moved = False
             return 'Up'
         return 'Down'
-    
+
     def AI(self):
-        all_moves = {}
-        for possibility in self.game.gamepanel.get_possible_moves():
+        self.update_board_values()
+        """
+        for possibility in self.availabe_moves:
             score = self.game.gamepanel.get_score_after_move(possibility)
             print(possibility + ": "+str(score))
         print('\n')
+        """
+
+    def update_board_values(self):
+        self.grid = self.game.gamepanel.get_cell_grid()
+        self.previous_grid = self.game.gamepanel.get_previous_grid()
+        self.availabe_moves = self.game.gamepanel.get_possible_moves()
+        self.empty_cells = self.game.gamepanel.get_nb_empty_cells()
+        self.max_value_cell = self.game.gamepanel.get_max_cell_value()
+        self.score = self.game.gamepanel.get_score()

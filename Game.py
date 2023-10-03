@@ -38,15 +38,7 @@ class Game:
                     flag=1
                     break
         if not (flag or self.gamepanel.can_merge()):
-            self.end = True
-            print(str(self.gamepanel.score))
-            
-            # wait the window to appear and takes screenshots
-            self.gamepanel.window.update_idletasks()
-            self.gamepanel.window.update()
-            time.sleep(3)
-            # self.take_screenshot()
-            self.gamepanel.window.after(1, lambda: self.gamepanel.window.destroy())
+            self.end_game(time_sleep=3, option='Screen')
 
         if self.gamepanel.moved:
             self.have_moved = True
@@ -54,6 +46,31 @@ class Game:
             
         self.gamepanel.color_grid()
         self.linkKeys(event)
+    
+    def end_game(self, time_sleep, option= None):
+        """
+        End the game and perform optional actions.
+
+        Parameters:
+        time_sleep : time in seconds waiting with the current window
+
+        option : End the game by specific way
+            - 'Display': Wait the window displaying and close after time_sleep time.
+            - 'Screen': Display the window and screen the board (take_screenshot function)
+        """
+        self.end = True
+        print(str(self.gamepanel.score))
+        
+        if option=='Display' or option=='Screen':
+            # wait the window to appear 
+            self.gamepanel.window.update_idletasks()
+            self.gamepanel.window.update()
+            time.sleep(time_sleep)
+            self.take_screenshot()
+
+        if option=='Screen':
+            self.take_screenshot()
+        self.gamepanel.window.after(1, lambda: self.gamepanel.window.destroy())
 
     def take_screenshot(self):
         x = self.gamepanel.window.winfo_x() + 8
