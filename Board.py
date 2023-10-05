@@ -164,18 +164,22 @@ class Board:
 
     def get_possible_moves(self):
         moves = []
-        for i in range(4):
-            for j in range(3):
-                if self.cell_grid[i][j] == self.cell_grid[i][j + 1]:
-                    moves.append('Left')
-                    moves.append('Right')
-                    break
-        for i in range(3):
-            for j in range(4):
-                if self.cell_grid[i][j] == self.cell_grid[i + 1][j]:
+        rows, cols = len(self.cell_grid), len(self.cell_grid[0])
+        for i in range(rows):
+            for j in range(cols):
+                if self.cell_grid[i][j] == 0:
+                    moves = ['Down', 'Left', 'Right', 'Up']
+                    return moves
+        for i in range(rows):
+            for j in range(cols):
+                if i > 0 and (self.cell_grid[i][j] == self.cell_grid[i-1][j] or self.cell_grid[i-1][j] == 0) and ('Up' not in moves):
                     moves.append('Up')
+                if i < rows - 1 and (self.cell_grid[i][j] == self.cell_grid[i+1][j] or self.cell_grid[i+1][j] == 0) and ('Down' not in moves):
                     moves.append('Down')
-                    break
+                if j > 0 and (self.cell_grid[i][j] == self.cell_grid[i][j-1] or self.cell_grid[i][j-1] == 0) and ('Left' not in moves):
+                    moves.append('Left')
+                if j < cols - 1 and (self.cell_grid[i][j] == self.cell_grid[i][j+1] or self.cell_grid[i][j+1] == 0) and ('Right' not in moves):
+                    moves.append('Right')
         return moves
 
     def get_all_random_cells(self):
@@ -216,6 +220,16 @@ class Board:
             self.cell_grid, self.score = self._backup_state
             self._backup_state = None
 
+    def get_next_state(self, pressed_key):
+        """Return the grid after a specific move (pressed_key)"""
+        # Copy the object isn't possible (tkinter error with pickle), creating a new object wasn't performant
+        # So I back and restore the object after the move
+        self._backup()
+        self.move(pressed_key)
+        grid = self.cell_grid
+        self._restore()
+        return grid
+    
     def get_score_after_move(self, pressed_key):
         # Copy the object isn't possible (tkinter error with pickle), creating a new object wasn't performant
         # So I back and restore the object after the move

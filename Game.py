@@ -16,21 +16,8 @@ class Game:
        self.gamepanel.random_cell()
        self.gamepanel.random_cell()
        self.gamepanel.color_grid()
-       self.gamepanel.window.bind('<Key>', self.linkKeys)
-       self.linkKeys("t") # execute link keys without key pressed
-       self.gamepanel.window.mainloop()
-
-    def linkKeys(self, event):
-        #if game is won or end then simply return
-        if self.end or self.won:
-            return
-        #else
-        
-        artificial_intelligence = AI(self)
-        artificial_intelligence.AI()
-        pressedKey = artificial_intelligence.best_choice()
-        self.gamepanel.move(pressedKey)
-        
+    
+    def continue_game(self):
         flag = 0        
         for i in range(4):
             for j in range(4):
@@ -38,15 +25,13 @@ class Game:
                     flag=1
                     break
         if not (flag or self.gamepanel.can_merge()):
-            self.end_game(time_sleep=3, option='Screen')
-
-        if self.gamepanel.moved:
-            self.have_moved = True
-            self.gamepanel.random_cell()
-            
-        self.gamepanel.color_grid()
-        self.linkKeys(event)
-    
+            self.end_game(time_sleep=0.1, option='Display')
+        else :
+            if self.gamepanel.moved :
+                self.have_moved = True
+                self.gamepanel.random_cell()
+            # self.gamepanel.color_grid()
+        
     def end_game(self, time_sleep, option= None):
         """
         End the game and perform optional actions.
@@ -59,17 +44,18 @@ class Game:
             - 'Screen': Display the window and screen the board (take_screenshot function)
         """
         self.end = True
-        print(str(self.gamepanel.score))
+        self.gamepanel.color_grid()
+        # print(str(self.gamepanel.score))
         
         if option=='Display' or option=='Screen':
             # wait the window to appear 
             self.gamepanel.window.update_idletasks()
             self.gamepanel.window.update()
             time.sleep(time_sleep)
-            self.take_screenshot()
 
         if option=='Screen':
             self.take_screenshot()
+        
         self.gamepanel.window.after(1, lambda: self.gamepanel.window.destroy())
 
     def take_screenshot(self):
