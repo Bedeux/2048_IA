@@ -25,7 +25,7 @@ class Game:
                     flag=1
                     break
         if not (flag or self.gamepanel.can_merge()):
-            self.end_game(time_sleep=0.1, option='Display')
+            self.end_game(time_sleep=0, option='Score')
         else :
             if self.gamepanel.moved :
                 self.have_moved = True
@@ -40,12 +40,14 @@ class Game:
         time_sleep : time in seconds waiting with the current window
 
         option : End the game by specific way
+            - 'Score' : print the score of each game in the terminal
             - 'Display': Wait the window displaying and close after time_sleep time.
             - 'Screen': Display the window and screen the board (take_screenshot function)
         """
         self.end = True
         self.gamepanel.color_grid()
-        # print(str(self.gamepanel.score))
+        if option=='Score' or option=='Display' or option=='Screen':
+            print(str(self.gamepanel.score))
         
         if option=='Display' or option=='Screen':
             # wait the window to appear 
