@@ -16,10 +16,11 @@ def main():
     gamepanel = Board()
     gamepanel.window.after(1, lambda: gamepanel.window.destroy())
     rl_agent = RLAgent(gamepanel) 
-    rl_agent.load_q_table('q_table.json')
+    rl_agent.load_q_table('rotation_q_table.json')
 
     n=0
-    games_number = 10
+    games_number = 100
+    scores = []
     while n<games_number:
         n+=1
         gamepanel = Board()
@@ -29,7 +30,10 @@ def main():
             action = rl_agent.choose_action(gamepanel)
             game2048.gamepanel.move(action)
             game2048.continue_game()
+        scores.append(gamepanel.get_score())
     print("--- %s seconds ---" % (round(time.time() - start_time,1)))
+    print("Max Score : ",max(scores))
+    print("Average Score : ",round(sum(scores) / len(scores)))
     # TODO Idée : multiplier par 2 les valeurs de la Q table (et même par 4) 
     # pour reproduire les mêmes scénarios avec les rewards associés 
 
@@ -39,20 +43,20 @@ def main():
 
 
 def train_rl_model_q_table():
-    num_episodes = 5000
+    num_episodes = 2000
     gamepanel = Board()
     gamepanel.window.after(1, lambda: gamepanel.window.destroy())
     rl_agent = RLAgent(gamepanel,exploration_prob=1) 
     rl_agent.train(num_episodes) 
     q_table_str_keys = {str(key): value for key, value in rl_agent.q_table.items()}
-    with open('q_table.json', 'w') as json_file:
+    with open('rotation_q_table.json', 'w') as json_file:
         json.dump(q_table_str_keys, json_file)
 
-def several_actions_for_position():
+def several_actions_for_position(qtable_json):
     gamepanel = Board()
     gamepanel.window.after(1, lambda: gamepanel.window.destroy())
     rl_agent = RLAgent(gamepanel) 
-    rl_agent.load_q_table('q_table.json')
+    rl_agent.load_q_table(qtable_json)
     multiple_actions_count = 0
     one_action_count = 0
     state_action_counts = {}
@@ -75,7 +79,10 @@ def several_actions_for_position():
 
     print("Nombre de positions avec plusieurs actions associées :", multiple_actions_count)
     print("Nombre de positions avec une seule action associée :", one_action_count)
+    print("Ratio : ",round(multiple_actions_count*100/(multiple_actions_count+one_action_count),2),"%")
 
 
 if __name__ == "__main__":
+    # train_rl_model_q_table()
+    # several_actions_for_position('q_table.json')
     main()

@@ -110,8 +110,42 @@ class RLAgent:
 
                 next_state = gamepanel.get_cell_grid()
                 self.update(initial_state, action, reward, next_state)
+                self.update_rotations(initial_state, action, reward, next_state)
 
                 total_reward += reward
 
             print(f"Épisode {episode + 1}: Récompense totale = {total_reward}")
 
+    def update_rotations(self,initial_state, action, reward, next_state):
+        """Update the Q table with same positions of 2048 pivoted"""
+        original_rotated_90 = tuple(zip(*initial_state[::-1]))
+        new_rotated_90 = tuple(zip(*next_state[::-1]))
+        action_90 = self.adapt_action(action,90)
+        self.update(original_rotated_90, action_90, reward, new_rotated_90)
+
+        original_rotated_180 = tuple(tuple(row[::-1]) for row in reversed(initial_state))
+        new_rotated_180 = tuple(tuple(row[::-1]) for row in reversed(next_state))
+        action_180 = self.adapt_action(action,180)
+        self.update(original_rotated_180, action_180, reward, new_rotated_180)
+
+        original_rotated_270 = tuple(tuple(initial_state[j][i] for j in range(len(initial_state))) for i in range(len(initial_state) - 1, -1, -1))
+        new_rotated_270 = tuple(tuple(next_state[j][i] for j in range(len(next_state))) for i in range(len(next_state) - 1, -1, -1))
+        action_270 = self.adapt_action(action,270)
+        self.update(original_rotated_270, action_270, reward, new_rotated_270)
+        
+    def adapt_action(self,action, degrees):
+        """From an action, create the same action with a pivot in degrees"""
+        action_mapping = {
+            "Up": "Right",
+            "Down": "Left",
+            "Left": "Up",
+            "Right": "Down"
+        }
+        if degrees == 90:
+            return action_mapping.get(action, action)
+        elif degrees == 180:
+            return action_mapping.get(action_mapping.get(action, action), action)
+        elif degrees == 270:
+            return action_mapping.get(action_mapping.get(action_mapping.get(action, action), action), action)
+        else:
+            return action  # Initial action

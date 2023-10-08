@@ -12,7 +12,8 @@ sys.setrecursionlimit(10000)
 def main():
     start_time = time.time()
     n=0
-    games_number = 10
+    games_number = 100
+    scores = []
     while n<games_number:
         n+=1
         gamepanel = Board()
@@ -24,8 +25,9 @@ def main():
             random_action = random.choice(possible_actions)
             game2048.gamepanel.move(random_action)
             game2048.continue_game()
-
+        scores.append(gamepanel.get_score())
     print("--- %s seconds ---" % (round(time.time() - start_time,1)))
+    print("Average Score : ",round(sum(scores) / len(scores)))
 
 
 if __name__ == "__main__":
