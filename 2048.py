@@ -3,8 +3,7 @@ from Board import Board
 from Game import Game
 from RL_Agent import RLAgent
 import json  # Pour lire la Q-table à partir d'un fichier JSON
-import ast
-
+from RLAgentSimplified import RLAgentSimplified
 
 
 # Recursion limit to 10k
@@ -15,11 +14,10 @@ def main():
     start_time = time.time()
     gamepanel = Board()
     gamepanel.window.after(1, lambda: gamepanel.window.destroy())
-    rl_agent = RLAgent(gamepanel) 
-    rl_agent.load_q_table('./q_tables/double_m_q_table.json')
+    rl_agent = RLAgentSimplified(gamepanel) 
 
     n=0
-    games_number = 100
+    games_number = 1
     scores = []
     while n<games_number:
         n+=1

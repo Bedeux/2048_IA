@@ -39,6 +39,8 @@ class Board:
         self.board = []   
         self.cell_grid = [[0]*4 for i in range(4)]
         self.previous_grid = None
+        self.all_grids_next_move = {}
+        self.last_moves_action = []
         self.compress = False
         self.merge = False
         self.moved = False
@@ -81,6 +83,18 @@ class Board:
         self.cell_grid = temp
 
     def move(self, pressed_key):
+        self.last_moves_action.append(pressed_key)
+        if len(self.last_moves_action) > 5:
+            last_five_elements = self.last_moves_action[-5:]
+            print(last_five_elements,'   ',len(set(last_five_elements)))
+            if len(set(last_five_elements)) == 1:
+                keys_except_excluded = [key for key in self.all_grids_next_move.keys() if key != pressed_key]
+                random_key = random.choice(keys_except_excluded)
+
+                # Obtenez la valeur correspondant à la clé choisie
+                pressed_key = self.all_grids_next_move[random_key]
+
+        self.all_grids_next_move = {} # Back to zero
         self.previous_grid = self.cell_grid
         if pressed_key == 'Up':
             self.transpose()
@@ -111,6 +125,40 @@ class Board:
             self.compress_grid()
             self.merge_grid()
             self.moved = self.compress or self.merge
+            self.compress_grid()
+            self.reverse()
+
+        else: 
+            pass
+
+        self.color_grid()
+
+    def move_for_exploration(self, pressed_key):
+        if pressed_key == 'Up':
+            self.transpose()
+            self.compress_grid()
+            self.merge_grid()
+            self.compress_grid()
+            self.transpose()
+            
+        elif pressed_key == 'Down':
+            self.transpose()
+            self.reverse()
+            self.compress_grid()
+            self.merge_grid()
+            self.compress_grid()
+            self.reverse()
+            self.transpose()
+            
+        elif pressed_key == 'Left':
+            self.compress_grid()
+            self.merge_grid()
+            self.compress_grid()
+
+        elif pressed_key == 'Right':
+            self.reverse()
+            self.compress_grid()
+            self.merge_grid()
             self.compress_grid()
             self.reverse()
 
@@ -164,22 +212,12 @@ class Board:
 
     def get_possible_moves(self):
         moves = []
-        rows, cols = len(self.cell_grid), len(self.cell_grid[0])
-        for i in range(rows):
-            for j in range(cols):
-                if self.cell_grid[i][j] == 0:
-                    moves = ['Down', 'Left', 'Right', 'Up']
-                    return moves
-        for i in range(rows):
-            for j in range(cols):
-                if i > 0 and (self.cell_grid[i][j] == self.cell_grid[i-1][j] or self.cell_grid[i-1][j] == 0) and ('Up' not in moves):
-                    moves.append('Up')
-                if i < rows - 1 and (self.cell_grid[i][j] == self.cell_grid[i+1][j] or self.cell_grid[i+1][j] == 0) and ('Down' not in moves):
-                    moves.append('Down')
-                if j > 0 and (self.cell_grid[i][j] == self.cell_grid[i][j-1] or self.cell_grid[i][j-1] == 0) and ('Left' not in moves):
-                    moves.append('Left')
-                if j < cols - 1 and (self.cell_grid[i][j] == self.cell_grid[i][j+1] or self.cell_grid[i][j+1] == 0) and ('Right' not in moves):
-                    moves.append('Right')
+        for action in ['Left', 'Down', 'Right', 'Up'] :
+            state = self.get_cell_grid()
+            new_state = self.get_next_state(action)
+            if new_state != state:
+                moves.append(action)
+                self.all_grids_next_move[action] = new_state
         return moves
 
     def get_all_random_cells(self):
@@ -213,19 +251,21 @@ class Board:
         return self.previous_grid
 
     def _backup(self):
-        self._backup_state = (copy.deepcopy(self.cell_grid), self.score)
+        # self._backup_state = (copy.deepcopy(self.cell_grid), self.score)
+        self._backup_state = ([list(row) for row in self.cell_grid], self.score)
+
         
     def _restore(self):
         if self._backup_state is not None:
             self.cell_grid, self.score = self._backup_state
             self._backup_state = None
-
+        
     def get_next_state(self, pressed_key):
         """Return the grid after a specific move (pressed_key)"""
         # Copy the object isn't possible (tkinter error with pickle), creating a new object wasn't performant
         # So I back and restore the object after the move
         self._backup()
-        self.move(pressed_key)
+        self.move_for_exploration(pressed_key)
         grid = self.cell_grid
         self._restore()
         return grid
@@ -234,7 +274,7 @@ class Board:
         # Copy the object isn't possible (tkinter error with pickle), creating a new object wasn't performant
         # So I back and restore the object after the move
         self._backup()
-        self.move(pressed_key)
+        self.move_for_exploration(pressed_key)
         score = self.score
         self._restore()
         return score
