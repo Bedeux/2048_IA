@@ -42,11 +42,15 @@ class RLAgent:
         else:
             # Choisissez l'action avec la plus grande valeur Q
             max_q_value = float('-inf')
-            best_action = None
+            if len(self.availabe_moves)>0:
+                best_action = random.choice(self.availabe_moves)
+            else :
+                best_action = 'Down'
+            
             for action in self.availabe_moves:
                 q_value = self.q_table.get((state_tuple, action), 0)
-                
-                # print(action,'  ',state_tuple,'  ',q_value)
+                if q_value != 0:
+                    print(action,'  ',state_tuple,'  ',q_value)
                 if q_value > max_q_value:
                     max_q_value = q_value
                     best_action = action
@@ -96,25 +100,55 @@ class RLAgent:
 
                 action = self.choose_action(gamepanel)
                 
-                initial_score = gamepanel.get_score()
                 initial_empty_cells = gamepanel.get_nb_empty_cells()
                 initial_state = gamepanel.get_cell_grid()
                 
                 game2048.gamepanel.move(action)
-                
-                score_diff = gamepanel.get_score() - initial_score
-                empty_cells_diff = gamepanel.get_nb_empty_cells() - initial_empty_cells
-                reward = score_diff + empty_cells_diff
+
+                new_state = gamepanel.get_cell_grid()
+                reward_border = self.reward_largest_tile_on_border(new_state)
+                reward_adjacents = self.reward_adjacents_value(new_state)
+                reward = reward_border + reward_adjacents + gamepanel.get_nb_empty_cells()
                 
                 game2048.continue_game()
 
                 next_state = gamepanel.get_cell_grid()
-                self.update(initial_state, action, reward, next_state)
-                self.update_rotations(initial_state, action, reward, next_state)
+                if action in ['Up', 'Down','Left','Right']:
+                    self.update(initial_state, action, reward, next_state)
+                    self.update_rotations(initial_state, action, reward, next_state)
+                    self.update_double_matrix(initial_state, action, reward, next_state)
 
                 total_reward += reward
 
             print(f"Épisode {episode + 1}: Récompense totale = {total_reward}")
+
+
+    def reward_largest_tile_on_border(self,matrix):
+        largest_tile = max(max(row) for row in matrix)
+        rows, cols = len(matrix), len(matrix[0])
+
+        # Vérifiez si la plus grosse tuile est sur un des 4 bords
+        if largest_tile == matrix[0][0] or largest_tile == matrix[0][cols - 1] or largest_tile == matrix[rows - 1][0] or largest_tile == matrix[rows - 1][cols - 1]:
+            return 10
+        else:
+            return 0
+
+    def reward_adjacents_value(self,matrix):
+        score = 0
+        for i in range(len(matrix)):
+            for j in range(len(matrix[i])):
+                value = matrix[i][j]
+                if value != 0:
+                    # Vérifiez les cases à gauche, en haut, à droite et en bas
+                    if j > 0 and matrix[i][j - 1] == value * 2:
+                        score += 0.5
+                    if i > 0 and matrix[i - 1][j] == value * 2:
+                        score += 0.5
+                    if j < len(matrix[i]) - 1 and matrix[i][j + 1] == value * 2:
+                        score += 0.5
+                    if i < len(matrix) - 1 and matrix[i + 1][j] == value * 2:
+                        score += 0.5
+        return score
 
     def update_rotations(self,initial_state, action, reward, next_state):
         """Update the Q table with same positions of 2048 pivoted"""
@@ -149,3 +183,12 @@ class RLAgent:
             return action_mapping.get(action_mapping.get(action_mapping.get(action, action), action), action)
         else:
             return action  # Initial action
+    
+    def update_double_matrix(self,initial_state, action, reward, next_state):
+        """Check if there is a 2 in matrix to double 
+        However it's an impossible position (every position gets a random cell 2 or 4)
+        """
+        if any(2 in row for row in initial_state):
+            initial_doubled_matrix = tuple(tuple(element * 2 for element in row) for row in initial_state)
+            next_doubled_matrix = tuple(tuple(element * 2 for element in row) for row in next_state)
+            self.update(initial_doubled_matrix,action,reward,next_doubled_matrix)

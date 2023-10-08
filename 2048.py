@@ -16,7 +16,7 @@ def main():
     gamepanel = Board()
     gamepanel.window.after(1, lambda: gamepanel.window.destroy())
     rl_agent = RLAgent(gamepanel) 
-    rl_agent.load_q_table('rotation_q_table.json')
+    rl_agent.load_q_table('./q_tables/double_m_q_table.json')
 
     n=0
     games_number = 100
@@ -43,13 +43,13 @@ def main():
 
 
 def train_rl_model_q_table():
-    num_episodes = 2000
+    num_episodes = 1000
     gamepanel = Board()
     gamepanel.window.after(1, lambda: gamepanel.window.destroy())
-    rl_agent = RLAgent(gamepanel,exploration_prob=1) 
+    rl_agent = RLAgent(gamepanel,exploration_prob=0.5) 
     rl_agent.train(num_episodes) 
     q_table_str_keys = {str(key): value for key, value in rl_agent.q_table.items()}
-    with open('rotation_q_table.json', 'w') as json_file:
+    with open('./q_tables/double_m_q_table.json', 'w') as json_file:
         json.dump(q_table_str_keys, json_file)
 
 def several_actions_for_position(qtable_json):
@@ -63,7 +63,6 @@ def several_actions_for_position(qtable_json):
 
     for state_action in rl_agent.q_table.items():
         value = state_action[0]
-        
         action = value.split(", '")[1][:-2]
         state = value.split(", '")[0]
         if state in state_action_counts:
@@ -84,5 +83,5 @@ def several_actions_for_position(qtable_json):
 
 if __name__ == "__main__":
     # train_rl_model_q_table()
-    # several_actions_for_position('q_table.json')
+    # several_actions_for_position('./q_tables/double_m_q_table.json')
     main()
