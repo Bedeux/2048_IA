@@ -2,7 +2,6 @@ from tkinter import *
 import time
 from PIL import ImageGrab
 from Board import Board
-from AI import AI
 
 class Game:
     def __init__(self, gamepanel : Board):
