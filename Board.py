@@ -84,15 +84,6 @@ class Board:
 
     def move(self, pressed_key):
         self.last_moves_action.append(pressed_key)
-        if len(self.last_moves_action) > 5:
-            last_five_elements = self.last_moves_action[-5:]
-            print(last_five_elements,'   ',len(set(last_five_elements)))
-            if len(set(last_five_elements)) == 1:
-                keys_except_excluded = [key for key in self.all_grids_next_move.keys() if key != pressed_key]
-                random_key = random.choice(keys_except_excluded)
-
-                # Obtenez la valeur correspondant à la clé choisie
-                pressed_key = self.all_grids_next_move[random_key]
 
         self.all_grids_next_move = {} # Back to zero
         self.previous_grid = self.cell_grid
@@ -215,10 +206,17 @@ class Board:
         for action in ['Left', 'Down', 'Right', 'Up'] :
             state = self.get_cell_grid()
             new_state = self.get_next_state(action)
-            if new_state != state:
+            if self.different_states(state, new_state):
                 moves.append(action)
                 self.all_grids_next_move[action] = new_state
         return moves
+    
+    def different_states(self, state1, state2):
+        for i in range(len(state1)):
+            for j in range(len(state1[0])):
+                if state1[i][j] != state2[i][j]:
+                    return True
+        return False
 
     def get_all_random_cells(self):
         cells=[]

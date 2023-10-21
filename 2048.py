@@ -5,7 +5,6 @@ from RL_Agent import RLAgent
 import json  # Pour lire la Q-table à partir d'un fichier JSON
 from RLAgentSimplified import RLAgentSimplified
 
-
 # Recursion limit to 10k
 import sys
 sys.setrecursionlimit(10000)
@@ -17,7 +16,7 @@ def main():
     rl_agent = RLAgentSimplified(gamepanel) 
 
     n=0
-    games_number = 1
+    games_number = 100
     scores = []
     while n<games_number:
         n+=1
@@ -80,6 +79,4 @@ def several_actions_for_position(qtable_json):
 
 
 if __name__ == "__main__":
-    # train_rl_model_q_table()
-    # several_actions_for_position('./q_tables/double_m_q_table.json')
     main()

@@ -5,12 +5,8 @@ import time
 import json
 
 class RLAgentSimplified:
-    def __init__(self, board, learning_rate=0.1, discount_factor=0.9, exploration_prob=0.2):
+    def __init__(self, board):
         self.board = board
-        self.q_table = {}  # Utilisez une table Q pour stocker les valeurs Q
-        self.learning_rate = learning_rate
-        self.discount_factor = discount_factor
-        self.exploration_prob = exploration_prob
         self.grid = None
         self.previous_grid = None
         self.availabe_moves = []
@@ -27,19 +23,14 @@ class RLAgentSimplified:
             best_reward = -1
             
             state = board.get_cell_grid()
-            
             for action in available_moves:
                 next_state = board.all_grids_next_move[action]
                 reward_action = self.set_reward(next_state)
-                print(state,'  ',action,'  ',next_state,'  ',reward_action)
-                if reward_action > best_reward:
-                    
+                if reward_action > best_reward and board.different_states(state,next_state):
                     best_reward = reward_action
                     best_action = action
-                    return best_action
         else :
             best_action = 'None'
-        print(best_action)
         return best_action
 
     def update_board_values(self, board):
@@ -54,8 +45,9 @@ class RLAgentSimplified:
     def set_reward(self,new_state):
         reward_border = self.reward_largest_tile_on_border(new_state)
         reward_adjacents = self.reward_adjacents_value(new_state)
+        reward_future_merges = self.reward_tiles_ready_to_converge(new_state)
         reward_empty_cells = self.reward_empty_cells(new_state)
-        return reward_border + reward_adjacents + reward_empty_cells
+        return reward_border + reward_adjacents + reward_future_merges + reward_empty_cells
 
     def reward_largest_tile_on_border(self,matrix):
         largest_tile = max(max(row) for row in matrix)
@@ -68,12 +60,12 @@ class RLAgentSimplified:
             return 0
 
     def reward_adjacents_value(self,matrix):
+        """Example : reward += 1 if 4 and 8 are next to"""
         score = 0
         for i in range(len(matrix)):
             for j in range(len(matrix[i])):
                 value = matrix[i][j]
                 if value != 0:
-                    # Vérifiez les cases à gauche, en haut, à droite et en bas
                     if j > 0 and matrix[i][j - 1] == value * 2:
                         score += 0.5
                     if i > 0 and matrix[i - 1][j] == value * 2:
@@ -84,6 +76,23 @@ class RLAgentSimplified:
                         score += 0.5
         return score
     
+    def reward_tiles_ready_to_converge(self,matrix):
+        """Return the number of pairs that can merge"""
+        score = 0
+        for i in range(len(matrix)):
+            for j in range(len(matrix[i])):
+                value = matrix[i][j]
+                if value != 0:
+                    if j > 0 and matrix[i][j - 1] == value:
+                        score += 0.5
+                    if i > 0 and matrix[i - 1][j] == value:
+                        score += 0.5
+                    if j < len(matrix[i]) - 1 and matrix[i][j + 1] == value:
+                        score += 0.5
+                    if i < len(matrix) - 1 and matrix[i + 1][j] == value:
+                        score += 0.5
+        return score
+
     def reward_empty_cells(self, matrix):
         empty_cells = 0
         for row in matrix:
