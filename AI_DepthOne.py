@@ -1,6 +1,7 @@
 import random
 from Board import Board
 from Game import Game
+from WorstTileGenerator import WorstTileGenerator
 import time
 import json
 
@@ -34,6 +35,39 @@ class AI_DepthOne:
         else :
             best_action = 'None'
         return best_action
+
+    def choose_action_depths(self, board : Board):
+        available_moves = board.get_possible_moves()
+        if len(available_moves)>0:
+            best_action = random.choice(available_moves)
+            best_reward = -1
+            
+            state = board.get_cell_grid()
+            for action in available_moves:
+
+                next_state = board.all_grids_next_move[action]
+                reward_action = self.get_average_rewards_after_all_possibilities(next_state)
+                if reward_action > best_reward and board.different_states(state,next_state):
+                    best_reward = reward_action
+                    best_action = action
+        else :
+            best_action = 'None'
+        return best_action
+    
+    def get_average_rewards_after_all_possibilities(self, initial_state, depth=1):
+        new_board = Board()
+        new_worst_grid = WorstTileGenerator(initial_state)
+        new_board.cell_grid = new_worst_grid.get_worst_grid()
+        available_moves = new_board.get_possible_moves()
+        if len(available_moves)>0:
+            reward_actions = []
+            for action in available_moves:
+                next_state = new_board.all_grids_next_move[action]
+                reward_actions.append(self.set_reward(next_state))                
+            average_score = round(sum(reward_actions) / len(reward_actions))
+            return average_score
+        else : 
+            return 0
 
     def update_board_values(self, board):
         self.board = board

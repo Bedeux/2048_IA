@@ -11,7 +11,7 @@ def main():
     start_time = time.time()
     gamepanel = Board()
     gamepanel.window.after(1, lambda: gamepanel.window.destroy())
-    ai_depth_one = AI_DepthOne(gamepanel,{'border': 1.0, 'biggest_adjacents': 1.0, 'future_merges': 0.5, 'empty_cells': 0.5}) 
+    ai_depth_one = AI_DepthOne(gamepanel, {'border': 1.0, 'biggest_adjacents': 1.0, 'future_merges': 0.6, 'empty_cells': 0.6})
 
     n=0
     games_number = 100
@@ -23,6 +23,7 @@ def main():
         game2048.start()
         while not game2048.end and not game2048.won:
             action = ai_depth_one.choose_action(gamepanel)
+            # action = ai_depth_one.choose_action_depths(gamepanel)
             game2048.gamepanel.move(action)
             game2048.continue_game()
         scores.append(gamepanel.get_score())

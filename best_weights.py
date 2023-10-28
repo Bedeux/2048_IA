@@ -19,7 +19,7 @@ def main():
         gamepanel.window.after(0, lambda: gamepanel.window.destroy())
         ai_depth_one = AI_DepthOne(gamepanel,weights) 
         n=0
-        games_number = 5
+        games_number = 10
         scores = []
         while n<games_number:
             n+=1
@@ -31,7 +31,11 @@ def main():
                 game2048.gamepanel.move(action)
                 game2048.continue_game()
             scores.append(gamepanel.get_score())
-
+            
+            if n==3 and round(sum(scores) / len(scores))<5000:
+                n = games_number # end the loop
+                print('END : bad parameters')
+                
         average_score = round(sum(scores) / len(scores))
         print("--- %s seconds ---" % (round(time.time() - start_time,1)))
         print("Max Score : ",max(scores))

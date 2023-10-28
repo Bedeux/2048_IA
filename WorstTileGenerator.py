@@ -76,13 +76,10 @@ class WorstTileGenerator:
         position_rewards = {}
         for position in self.get_all_random_positions():
             position_rewards[str(position)] = self.get_reward(position)
-        print(position_rewards)
         best_positions = [pos for pos, score in position_rewards.items() if score == max(position_rewards.values())]
-        best_position_str = random.choice(best_positions)  # If max score on different positions
-        best_grid = eval(best_position_str) # str to list
+        if len(best_positions)>0:
+            best_position_str = random.choice(best_positions)  # If max score on different positions
+            best_grid = eval(best_position_str) # str to list
+        else : 
+            best_grid = self.grid
         return best_grid
-            
-grid = [[0, 0, 0, 0], [2, 8, 0, 2], [16, 32, 8, 4], [256, 64, 32, 8]]
-worst = WorstTileGenerator(grid)
-worst.get_all_random_positions()
-print(worst.get_worst_grid())
