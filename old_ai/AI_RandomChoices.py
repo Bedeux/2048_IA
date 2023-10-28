@@ -17,7 +17,6 @@ def main():
         n+=1
         gamepanel = Board()
         game2048 = Game(gamepanel)
-        # rl_agent.train(num_episodes) 
         game2048.start()
         possible_actions = ["Up", "Down", "Right", "Left"]
         while not game2048.end and not game2048.won:
