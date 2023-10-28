@@ -177,7 +177,7 @@ class Board:
         curr = random.choice(cells)
         i = curr[0]
         j = curr[1]
-        self.cell_grid[i][j]=2
+        self.cell_grid[i][j]= random.choice([2,4])
         
     def can_merge(self):
         for i in range(4):

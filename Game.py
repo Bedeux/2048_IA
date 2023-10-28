@@ -24,7 +24,7 @@ class Game:
                     flag=1
                     break
         if not (flag or self.gamepanel.can_merge()):
-            self.end_game(time_sleep=0, option='Score')
+            self.end_game(time_sleep=0, option='None')
         else :
             if self.gamepanel.moved :
                 self.have_moved = True
