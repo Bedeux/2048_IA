@@ -16,7 +16,7 @@ class Game:
        self.gamepanel.random_cell()
        self.gamepanel.color_grid()
     
-    def continue_game(self):
+    def continue_game(self, dipslay_moves = False):
         flag = 0        
         for i in range(4):
             for j in range(4):
@@ -29,8 +29,13 @@ class Game:
             if self.gamepanel.moved :
                 self.have_moved = True
                 self.gamepanel.random_cell()
-            # self.gamepanel.color_grid()
-        
+            
+            if dipslay_moves :
+                self.gamepanel.color_grid()
+                time.sleep(0.5)
+                self.gamepanel.window.update_idletasks()
+                self.gamepanel.window.update()
+
     def end_game(self, time_sleep, option= None):
         """
         End the game and perform optional actions.

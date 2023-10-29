@@ -6,7 +6,7 @@ import time
 import json
 
 class AI_DepthOne:
-    def __init__(self, board,weights = {'border': 1.0,'adjacents': 1.0,'future_merges': 1.0,'empty_cells': 1.0}):
+    def __init__(self, board,weights = {'border': 1.0,'adjacents':1.0,'biggest_adjacents': 1.0,'future_merges': 1.0,'empty_cells': 1.0, 'full_line':1.0 }):
         self.board = board
         self.grid = None
         self.previous_grid = None
@@ -84,18 +84,46 @@ class AI_DepthOne:
         reward_biggest_adjacents = self.reward_two_biggest_adjacent(new_state) * self.weights['biggest_adjacents']
         reward_future_merges = self.reward_tiles_ready_to_converge(new_state) * self.weights['future_merges']
         reward_empty_cells = self.reward_empty_cells(new_state) * self.weights['empty_cells']
+        reward_full_line = self.reward_full_line_with_largest_tile(new_state) * self.weights['full_line']
 
-        return reward_border + reward_biggest_adjacents + reward_future_merges + reward_empty_cells
+        return reward_border + reward_biggest_adjacents + reward_future_merges + reward_empty_cells + reward_full_line
 
-    def reward_largest_tile_on_border(self,matrix):
+    def reward_largest_tile_on_border(self, matrix):
         largest_tile = max(max(row) for row in matrix)
         rows, cols = len(matrix), len(matrix[0])
 
-        # Vérifiez si la plus grosse tuile est sur un des 4 bords
+        # Check whether the largest tile is on one of the board's corners
         if largest_tile == matrix[0][0] or largest_tile == matrix[0][cols - 1] or largest_tile == matrix[rows - 1][0] or largest_tile == matrix[rows - 1][cols - 1]:
             return 2
+        # Check whether the largest tile is in one of the first rows, last rows, first columns or last columns.    
+        elif largest_tile in matrix[0] or largest_tile in matrix[rows - 1] or largest_tile in [row[0] for row in matrix] or largest_tile in [row[cols - 1] for row in matrix]:
+            return 1
         else:
-            return 0
+            return 0 # if the largest tile in the middle of the board
+    
+    def reward_full_line_with_largest_tile(self, matrix):
+        """Reward when the main line or column of the largest tile isn't empty"""
+        largest_tile = max(max(row) for row in matrix)
+        rows, cols = len(matrix), len(matrix[0])
+
+        # Check whether the largest tile is on one of the board's corners
+        if largest_tile == matrix[0][0] or largest_tile == matrix[0][cols - 1] or largest_tile == matrix[rows - 1][0] or largest_tile == matrix[rows - 1][cols - 1]:
+            # get line and column index of largest tile
+            for i in range(rows):
+                for j in range(cols):
+                    if matrix[i][j] == largest_tile:
+                        row_with_largest_tile = i
+                        column_with_largest_tile = j
+
+            row_sum = sum(matrix[row_with_largest_tile])
+            column_sum = sum(matrix[i][column_with_largest_tile] for i in range(rows))
+
+            # Check that there are no empty cells (i.e. no zeros) in the row or column with the largest cells
+            if all(matrix[row_with_largest_tile]) and row_sum>=column_sum:
+                return 1  
+            if all(matrix[i][column_with_largest_tile] for i in range(rows)) and column_sum>row_sum:
+                return 1  
+        return 0  
 
     def reward_adjacents_value(self,matrix):
         """Example : reward += 1 if 4 and 8 are next to"""
