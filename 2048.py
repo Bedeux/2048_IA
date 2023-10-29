@@ -10,8 +10,9 @@ sys.setrecursionlimit(10000)
 def main():
     start_time = time.time()
     gamepanel = Board()
-    gamepanel.window.after(1, lambda: gamepanel.window.destroy())
-    ai_depth_one = AI_DepthOne(gamepanel, {'border': 1.0, 'biggest_adjacents': 1.0, 'future_merges': 0.6, 'empty_cells': 0.6})
+    # gamepanel.window.after(1, lambda: gamepanel.window.destroy())
+    weights =  {'border': 0.90, 'biggest_adjacents': 0.89, 'future_merges': 0.21, 'empty_cells': 0.26, 'full_line': 0.18}
+    ai_depth_one = AI_DepthOne(gamepanel, weights=weights)
 
     n=0
     games_number = 100
@@ -25,7 +26,7 @@ def main():
             action = ai_depth_one.choose_action(gamepanel)
             # action = ai_depth_one.choose_action_depths(gamepanel)
             game2048.gamepanel.move(action)
-            game2048.continue_game()
+            game2048.continue_game(dipslay_moves=False)
         scores.append(gamepanel.get_score())
     print("--- %s seconds ---" % (round(time.time() - start_time,1)))
     print("Max Score : ",max(scores))
