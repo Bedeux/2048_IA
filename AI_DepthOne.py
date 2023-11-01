@@ -85,8 +85,8 @@ class AI_DepthOne:
         reward_future_merges = self.reward_tiles_ready_to_converge(new_state) * self.weights['future_merges']
         reward_empty_cells = self.reward_empty_cells(new_state) * self.weights['empty_cells']
         reward_full_line = self.reward_full_line_with_largest_tile(new_state) * self.weights['full_line']
-
-        return reward_border + reward_biggest_adjacents + reward_future_merges + reward_empty_cells + reward_full_line
+        reward_weight_sum = self.reward_weighted_sum_of_tiles(new_state)* self.weights['weighted_sum']
+        return reward_border + reward_biggest_adjacents + reward_future_merges + reward_empty_cells + reward_full_line + reward_weight_sum
 
     def reward_largest_tile_on_border(self, matrix):
         largest_tile = max(max(row) for row in matrix)
@@ -168,16 +168,42 @@ class AI_DepthOne:
         for i in range(len(matrix)):
             for j in range(len(matrix[i])):
                 value = matrix[i][j]
+                value_coef = 1 
+                if value<=128:
+                    value_coef=0.9 # Less coeff if low value
                 if value != 0:
                     if j > 0 and matrix[i][j - 1] == value:
-                        score += 0.5
+                        score += 0.5*value_coef
                     if i > 0 and matrix[i - 1][j] == value:
-                        score += 0.5
+                        score += 0.5*value_coef
                     if j < len(matrix[i]) - 1 and matrix[i][j + 1] == value:
-                        score += 0.5
+                        score += 0.5*value_coef
                     if i < len(matrix) - 1 and matrix[i + 1][j] == value:
-                        score += 0.5
+                        score += 0.5*value_coef
         return score
+    
+    def reward_weighted_sum_of_tiles(self,matrix):
+        largest_tile = max(max(row) for row in matrix)
+        rows, cols = len(matrix), len(matrix[0])
+
+        for i in range(rows):
+            for j in range(cols):
+                if matrix[i][j] == largest_tile:
+                    row_with_largest_tile = i
+                    column_with_largest_tile = j
+
+        total_reward = 0
+        for i in range(rows):
+            for j in range(cols):
+                tile = matrix[i][j]
+                if tile > 0:
+                    distance = abs(i - row_with_largest_tile) + abs(j - column_with_largest_tile)
+                    if distance == 0:
+                        coefficient = 2
+                    else:
+                        coefficient = 1 / distance  
+                    total_reward += tile * coefficient
+        return total_reward/largest_tile
 
     def reward_empty_cells(self, matrix):
         empty_cells = 0

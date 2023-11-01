@@ -6,14 +6,14 @@ from AI_DepthOne import AI_DepthOne
 def objective(trial):
     weights = {
         'border': trial.suggest_uniform('border', 0, 1),
-        'adjacents': trial.suggest_uniform('adjacents', 0, 1),
         'biggest_adjacents': trial.suggest_uniform('biggest_adjacents', 0, 1),
         'future_merges': trial.suggest_uniform('future_merges', 0, 1),
         'empty_cells': trial.suggest_uniform('empty_cells', 0, 1),
-        'full_line': trial.suggest_uniform('full_line', 0, 1)
+        'full_line': trial.suggest_uniform('full_line', 0, 1),
+        'weighted_sum': trial.suggest_uniform('weighted_sum', 0, 1)
     }
 
-    games_number = 20
+    games_number = 10
     scores = []
     for _ in range(games_number):
         gamepanel = Board()

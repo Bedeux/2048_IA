@@ -11,7 +11,7 @@ def main():
     start_time = time.time()
     gamepanel = Board()
     # gamepanel.window.after(1, lambda: gamepanel.window.destroy())
-    weights =  {'border': 0.90, 'biggest_adjacents': 0.89, 'future_merges': 0.21, 'empty_cells': 0.26, 'full_line': 0.18}
+    weights =   {'border': 0.96, 'biggest_adjacents': 0.806, 'future_merges': 0.388, 'empty_cells': 0.445, 'full_line': 0.509, 'weighted_sum': 0.139}
     ai_depth_one = AI_DepthOne(gamepanel, weights=weights)
 
     n=0
