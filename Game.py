@@ -4,8 +4,9 @@ from PIL import ImageGrab
 from Board import Board
 
 class Game:
-    def __init__(self, gamepanel : Board):
+    def __init__(self, gamepanel : Board, option_endgame):
         self.gamepanel = gamepanel
+        self.option_endgame = option_endgame
         self.end = False
         self.won = False
         self.last_move = 'None'
@@ -24,7 +25,7 @@ class Game:
                     flag=1
                     break
         if not (flag or self.gamepanel.can_merge()):
-            self.end_game(time_sleep=0, option='None')
+            self.end_game(time_sleep=0.5, option=self.option_endgame)
         else :
             if self.gamepanel.moved :
                 self.have_moved = True

@@ -2,12 +2,13 @@ import time
 from Board import Board
 from Game import Game
 from AI_DepthOne import AI_DepthOne
+import argparse
 
 # Recursion limit to 10k
 import sys
 sys.setrecursionlimit(10000)
 
-def main():
+def main(option):
     start_time = time.time()
     gamepanel = Board()
     # gamepanel.window.after(1, lambda: gamepanel.window.destroy())
@@ -20,7 +21,7 @@ def main():
     while n<games_number:
         n+=1
         gamepanel = Board()
-        game2048 = Game(gamepanel)
+        game2048 = Game(gamepanel, option)
         game2048.start()
         while not game2048.end and not game2048.won:
             action = ai_depth_one.choose_action(gamepanel)
@@ -33,4 +34,7 @@ def main():
     print("Average Score : ",round(sum(scores) / len(scores)))
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Run the game with options')
+    parser.add_argument('option', nargs='?', default='None', help='Choose an option if you want (Display, Score, Screenshot)')
+    args = parser.parse_args()
+    main(args.option)
