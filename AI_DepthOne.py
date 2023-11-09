@@ -1,82 +1,41 @@
 import random
 from Board import Board
-from Game import Game
-from WorstTileGenerator import WorstTileGenerator
-import time
-import json
+from BoardExploration import BoardExploration
 
 class AI_DepthOne:
-    def __init__(self, board,weights = {'border': 1.0,'adjacents':1.0,'biggest_adjacents': 1.0,'future_merges': 1.0,'empty_cells': 1.0, 'full_line':1.0 }):
-        self.board = board
-        self.grid = None
-        self.previous_grid = None
-        self.availabe_moves = []
-        self.empty_cells = -1
-        self.max_value_cell = 0
-        self.score = 0
+    def __init__(self,weights = {'border': 1.0,'adjacents':1.0,'biggest_adjacents': 1.0,'future_merges': 1.0,'empty_cells': 1.0, 'full_line':1.0 }):
         self.weights = weights
-        self.update_board_values(board)
+        self.temp_board = BoardExploration()
         
-
     def choose_action(self, board : Board):
-        available_moves = board.get_possible_moves()
-        # print(available_moves)
-        if len(available_moves)>0:
-            best_action = random.choice(available_moves)
-            best_reward = -1
-            
-            state = board.get_cell_grid()
-            for action in available_moves:
-                next_state = board.all_grids_next_move[action]
-                reward_action = self.set_reward(next_state)
-                if reward_action > best_reward and board.different_states(state,next_state):
-                    best_reward = reward_action
-                    best_action = action
-        else :
-            best_action = 'None'
-        return best_action
-
-    def choose_action_depths(self, board : Board):
-        available_moves = board.get_possible_moves()
-        if len(available_moves)>0:
-            best_action = random.choice(available_moves)
-            best_reward = -1
-            
-            state = board.get_cell_grid()
-            for action in available_moves:
-
-                next_state = board.all_grids_next_move[action]
-                reward_action = self.get_average_rewards_after_all_possibilities(next_state)
-                if reward_action > best_reward and board.different_states(state,next_state):
+        state = board.get_cell_grid()
+        new_states = self.temp_board.get_all_states_depth_one(state)
+        if len(new_states)>0:
+            best_action = random.choice(list(new_states.keys()))
+            best_reward = -1000
+            for action, new_state in new_states.items():
+                reward_action = self.set_reward(new_state)
+                if reward_action > best_reward and board.different_states(state,new_state):
                     best_reward = reward_action
                     best_action = action
         else :
             best_action = 'None'
         return best_action
     
-    def get_average_rewards_after_all_possibilities(self, initial_state, depth=1):
-        new_board = Board()
-        new_worst_grid = WorstTileGenerator(initial_state)
-        new_board.cell_grid = new_worst_grid.get_worst_grid()
-        available_moves = new_board.get_possible_moves()
-        if len(available_moves)>0:
-            reward_actions = []
-            for action in available_moves:
-                next_state = new_board.all_grids_next_move[action]
-                reward_actions.append(self.set_reward(next_state))                
-            average_score = round(sum(reward_actions) / len(reward_actions))
-            return average_score
-        else : 
-            return 0
+    def choose_action_depths(self, board : Board):
+        """TEST : AI on depth 3"""
+        all_states = self.temp_board.get_all_states_depth_three(board.cell_grid)
+        best_action = random.choice(['Up','Down','Left','Right'])
 
-    def update_board_values(self, board):
-        self.board = board
-        self.grid = board.get_cell_grid()
-        self.previous_grid = board.get_previous_grid()
-        self.availabe_moves = board.get_possible_moves()
-        self.empty_cells = board.get_nb_empty_cells()
-        self.max_value_cell = board.get_max_cell_value()
-        self.score = board.get_score()
+        action_best_reward = {'Up':-100,'Down':-100,'Left':-100,'Right':-100}
+        for action,grids in all_states.items():
+            for grid in grids:
+                reward = self.set_reward(grid)
+                if float(reward) > float(action_best_reward[action]):
+                    action_best_reward[action] = reward
+        
+        best_action = max(action_best_reward, key= lambda x: action_best_reward[x])
+        return best_action
 
     def set_reward(self,new_state):
         reward_border = self.reward_largest_tile_on_border(new_state) * self.weights['border']
