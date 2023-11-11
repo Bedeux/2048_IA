@@ -17,6 +17,9 @@ For your information, achieving a 2048 tile in the game usually requires approxi
 
 The first thing I tested was random actions. At this stage, the AI would randomly select one of the available moves. As a reminder, there are 4: Up, Down, Left and Right. I discovered with this method that it was possible to lose without having a tile of at least 128 ^^
 
+![Random Backgound OK](https://github.com/Bedeux/2048_IA/assets/77120351/0d166e4f-1d06-4419-9e76-8a48bbf2d100)
+
+
 ## Prioritization
 
 The first significant strategy I implemented was a prioritization strategy. In other words, my AI gave preference to specific moves following this order:
@@ -30,14 +33,20 @@ As long as it could move downwards, the AI would prioritize the downward directi
 
 With this AI, I attempted to replicate a strategy commonly used by humans: guiding the largest tile into a corner and keeping it there. However, it's worth noting that my AI's performance with this strategy is well below that of human players.
 
+![Prioritization Background OK](https://github.com/Bedeux/2048_IA/assets/77120351/42bf070e-df81-4f15-99b5-ac39c2615ee1)
+
 ## Reinforcement Learning
 
 #TODO
 
 (First version of RL)
 
+![RL V1 Background OK](https://github.com/Bedeux/2048_IA/assets/77120351/f34070cf-f8af-4d4c-beb8-901536aec196)
+
 ## Reinforcement Learning with Optimizations
 
 This strategy uses Reinforcement Learning with new rewards and specific hyperparameter optimizations.
 
 Weights: {'border': 0.96, 'biggest_adjacents': 0.806, 'future_merges': 0.388, 'empty_cells': 0.445, 'full_line': 0.509, 'weighted_sum': 0.139}
+
+![RL V2 Background OK](https://github.com/Bedeux/2048_IA/assets/77120351/7b8b9331-c38d-4838-befe-2b05bf6a7cfe)
