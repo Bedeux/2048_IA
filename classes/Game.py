@@ -1,7 +1,7 @@
 from tkinter import *
 import time
 from PIL import ImageGrab
-from Board import Board
+from classes.Board import Board
 
 class Game:
     def __init__(self, gamepanel : Board, option_endgame):

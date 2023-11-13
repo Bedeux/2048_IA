@@ -1,7 +1,7 @@
 import optuna # To install this package : pip install optuna
-from Board import Board
-from Game import Game
-from AI_DepthOne import AI_DepthOne
+from classes.Board import Board
+from classes.Game import Game
+from classes.AI_DepthOne import AI_DepthOne
 
 def objective(trial):
     weights = {

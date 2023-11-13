@@ -1,6 +1,6 @@
 import time
-from Board import Board
-from Game import Game
+from classes.Board import Board
+from classes.Game import Game
 import random
 
 

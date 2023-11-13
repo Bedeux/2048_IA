@@ -1,6 +1,6 @@
 import random
-from Board import Board
-from BoardExploration import BoardExploration
+from classes.Board import Board
+from classes.BoardExploration import BoardExploration
 
 class AI_DepthOne:
     def __init__(self,weights = {'border': 1.0,'biggest_adjacents': 1.0,'future_merges': 1.0,'empty_cells': 1.0, 'full_line':1.0, 'weighted_sum' : 1.0 }):

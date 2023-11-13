@@ -1,5 +1,5 @@
 import copy
-from WorstTileGenerator import WorstTileGenerator
+from classes.WorstTileGenerator import WorstTileGenerator
 
 class BoardExploration:
     """Class to explore the next states (with fast execution -> no tkinter)"""
