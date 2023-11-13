@@ -1,6 +1,5 @@
 from tkinter import *
 import random
-import copy
 
 class Board:
     bgColor = {

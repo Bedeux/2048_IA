@@ -1,4 +1,4 @@
-import optuna
+import optuna # To install this package : pip install optuna
 from Board import Board
 from Game import Game
 from AI_DepthOne import AI_DepthOne
@@ -13,13 +13,13 @@ def objective(trial):
         'weighted_sum': trial.suggest_uniform('weighted_sum', 0, 1)
     }
 
-    games_number = 10
+    games_number = 25
     scores = []
     for _ in range(games_number):
         gamepanel = Board()
-        game2048 = Game(gamepanel)
+        game2048 = Game(gamepanel, None)
         game2048.start()
-        ai_depth_one = AI_DepthOne(gamepanel, weights)
+        ai_depth_one = AI_DepthOne(weights)
         while not game2048.end and not game2048.won:
             action = ai_depth_one.choose_action(gamepanel)
             game2048.gamepanel.move(action)
@@ -27,7 +27,7 @@ def objective(trial):
         scores.append(gamepanel.get_score())
 
     average_score = round(sum(scores) / len(scores))
-    return -average_score  # Optuna minimizes the objective function
+    return -average_score
 
 if __name__ == "__main__":
     study = optuna.create_study(direction="minimize")

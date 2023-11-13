@@ -16,7 +16,7 @@ def main():
     while n<games_number:
         n+=1
         gamepanel = Board()
-        game2048 = Game(gamepanel)
+        game2048 = Game(gamepanel, 'Display')
         # rl_agent.train(num_episodes) 
         game2048.start()
         possible_actions = ["Down", "Right", "Left", 'Up'] # in order of prioritization

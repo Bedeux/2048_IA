@@ -3,7 +3,7 @@ from Board import Board
 from BoardExploration import BoardExploration
 
 class AI_DepthOne:
-    def __init__(self,weights = {'border': 1.0,'adjacents':1.0,'biggest_adjacents': 1.0,'future_merges': 1.0,'empty_cells': 1.0, 'full_line':1.0 }):
+    def __init__(self,weights = {'border': 1.0,'biggest_adjacents': 1.0,'future_merges': 1.0,'empty_cells': 1.0, 'full_line':1.0, 'weighted_sum' : 1.0 }):
         self.weights = weights
         self.temp_board = BoardExploration()
         
@@ -38,8 +38,8 @@ class AI_DepthOne:
         return best_action
 
     def set_reward(self,new_state):
+        """Check README.md for more informations about rewards"""
         reward_border = self.reward_largest_tile_on_border(new_state) * self.weights['border']
-        # reward_adjacents = self.reward_adjacents_value(new_state) * self.weights['adjacents']
         reward_biggest_adjacents = self.reward_two_biggest_adjacent(new_state) * self.weights['biggest_adjacents']
         reward_future_merges = self.reward_tiles_ready_to_converge(new_state) * self.weights['future_merges']
         reward_empty_cells = self.reward_empty_cells(new_state) * self.weights['empty_cells']
@@ -102,12 +102,13 @@ class AI_DepthOne:
         return score
     
     def reward_two_biggest_adjacent(self,matrix):
+        """Rewards the presence of the two largest values being adjacent to each other"""
         largest_values = []
         for row in matrix:
             largest_values.extend(row)
         largest_values.sort(reverse=True)
 
-        largest_1, largest_2, largest_3 = largest_values[0], largest_values[1], largest_values[2]
+        largest_1, largest_2 = largest_values[0], largest_values[1]
         score = 0
 
         for i in range(len(matrix)):
@@ -117,6 +118,27 @@ class AI_DepthOne:
                     (i < len(matrix) - 1 and matrix[i + 1][j] == largest_2) or \
                     (j > 0 and matrix[i][j - 1] == largest_2) or \
                     (j < len(matrix[i]) - 1 and matrix[i][j + 1] == largest_2):
+                        score += 2
+
+        return score
+
+    def reward_second_third_adjacent(self,matrix):
+        """Rewards the presence of the second largest value adjacent to the third largest value"""
+        largest_values = []
+        for row in matrix:
+            largest_values.extend(row)
+        largest_values.sort(reverse=True)
+
+        largest_2, largest_3 = largest_values[1], largest_values[2]
+        score = 0
+
+        for i in range(len(matrix)):
+            for j in range(len(matrix[i])):
+                if matrix[i][j] == largest_2:
+                    if (i > 0 and matrix[i - 1][j] == largest_3) or \
+                    (i < len(matrix) - 1 and matrix[i + 1][j] == largest_3) or \
+                    (j > 0 and matrix[i][j - 1] == largest_3) or \
+                    (j < len(matrix[i]) - 1 and matrix[i][j + 1] == largest_3):
                         score += 2
 
         return score
@@ -142,6 +164,7 @@ class AI_DepthOne:
         return score
     
     def reward_weighted_sum_of_tiles(self,matrix):
+        """Calculates the sum of grid values with varying coefficients (far from largest tile -> lower coefficient)"""
         largest_tile = max(max(row) for row in matrix)
         rows, cols = len(matrix), len(matrix[0])
 
@@ -165,6 +188,7 @@ class AI_DepthOne:
         return total_reward/largest_tile
 
     def reward_empty_cells(self, matrix):
+        """Returns the count of empty cells in the matrix"""
         empty_cells = 0
         for row in matrix:
             empty_cells += row.count(0)

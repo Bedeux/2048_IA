@@ -33,7 +33,7 @@ class Game:
             
             if dipslay_moves :
                 self.gamepanel.color_grid()
-                time.sleep(0.5)
+                time.sleep(0.2) # Time between each move
                 self.gamepanel.window.update_idletasks()
                 self.gamepanel.window.update()
 
