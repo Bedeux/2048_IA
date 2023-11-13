@@ -1,6 +1,6 @@
 # 2048 AI Project
 
-Welcome to my 2048 AI project! This project is dedicated to creating the most powerful artificial intelligence for the popular game 2048. The primary objective is to develop an AI algorithm (with Reinforcement Learning) capable of achieving high scores.
+Welcome to my 2048 AI project! This project is dedicated to creating the most powerful artificial intelligence in Python for the popular game 2048. The primary objective is to develop an AI algorithm (with Reinforcement Learning) capable of achieving high scores.
 
 ### How to Play
 
@@ -14,7 +14,10 @@ While the primary aim is to achieve the 2048 tile, players can continue to pursu
 
 Here's a visual representation of the game:
 
-<img src="https://github.com/Bedeux/2048_IA/assets/77120351/cfde807d-30bb-4115-962a-74654301d8ef" width="400">
+<img src="https://github.com/Bedeux/2048_IA/assets/77120351/cfde807d-30bb-4115-962a-74654301d8ef" width="350">
+
+
+You can test the game on this web app : [https://play2048.co/](https://play2048.co/)
 
 ## Results Overview
 
@@ -27,7 +30,9 @@ Throughout the development of this project, I explored various strategies and te
 | [**Reinforcement Learning**](#reinforcement-learning) | 1024 | 13 792  | 5 839 |
 | [**Reinforcement Learning with Optimizations**](#reinforcement-learning-with-optimizations) | 2048 | 32 440 | 12 011 |
 
-For your information, achieving a 2048 tile in the game usually requires approximately 20 000 points.
+For reference, achieving a 2048 tile in the game usually necessitates around 20 000 points.
+
+In the course of this project, I conducted an extensive number of 2048 games to evaluate my AIs' performance. On my computer, a game of 2048 without a graphical interface typically concluded in approximately 0.5 to 1 second.
 
 ## Random Choices
 
@@ -54,7 +59,7 @@ With this AI, I attempted to replicate a strategy commonly used by humans: guidi
 
 ## Reinforcement Learning
 
-I initiated this project with the goal of delving into reinforcement learning, and the game 2048 presented itself as an ideal testing ground. Initially, I attempted to construct a Q-Table, only to realize the immense number of possible positions in this game—amounting to billions. Consequently, I pivoted towards a simpler strategy focusing on immediate rewards.
+I initiated this project with the goal of learning reinforcement learning, and the game 2048 presented itself as an ideal testing ground. Initially, I attempted to construct a Q-Table, only to realize the immense number of possible positions in this game—amounting to billions. Consequently, I pivoted towards a simpler strategy focusing on immediate rewards.
 
 In each position within the 2048 game, I analyze up to four potential moves, comparing the rewards associated with each to determine and select the optimal move.
 
@@ -62,14 +67,44 @@ Here an example :
 
 ![2048 Rewards](https://github.com/Bedeux/2048_IA/assets/77120351/76ccdd30-e17a-4ec5-9c81-6d0f3b354bd5)
 
-#TODO
+In this case, the 'Right' movement was selected because it led to the highest reward.
+
+#### How to calculate the reward for each position ?
+
+This part is therefore the key to AI's effectiveness. If the best rewards reflect the best moves, then the AI is likely to perform optimally.
+
+In the initial design, I aimed to grant the AI a certain degree of freedom with a minimal set of rewards:
+
+- Empty Cells: Each empty cell contributes a reward of 1 to the total.
+
+- Future Merges: A reward of 1 is assigned for each pair of tiles that can merge in the future.
 
 ![RL V1 Background OK](https://github.com/Bedeux/2048_IA/assets/77120351/f34070cf-f8af-4d4c-beb8-901536aec196)
 
+As you can see, this has produced good results, but there's still plenty of room for improvement. Basically, I wanted to give my AI as little help as possible, so that it could find strategies on its own. Finally, I took a different approach in the last game to try and achieve higher scores.
+
 ## Reinforcement Learning with Optimizations
 
-This strategy uses Reinforcement Learning with new rewards and specific hyperparameter optimizations.
+For this latest AI version, I kept working on reinforcement learning, sticking to immediate rewards (by calculating rewards for the next state). I introduced some new rewards, attempting to mimic the strategies I use when playing the game:
 
-Weights: {'border': 0.96, 'biggest_adjacents': 0.806, 'future_merges': 0.388, 'empty_cells': 0.445, 'full_line': 0.509, 'weighted_sum': 0.139}
+- Border: The AI gets a reward when the largest square is positioned in a corner of the grid.
 
+- Biggest Adjacent: A reward is granted when the two largest squares are adjacent to each other.
+
+- Full Line: The AI receives a reward when the row containing the largest square is fully occupied, preventing the largest square from being in the middle.
+
+- Weight Sum: This reward calculates the sum of grid values with different coefficients. The farther a square is from the largest square, the lower the coefficient. The goal is to encourage larger squares to converge toward the largest one.
+
+In the end, the final score is the sum of all these rewards, including those presented in the previous section.
+
+#### How to find the best reward combination?
+
+I created these rewards with arbitrary values. For instance, I assigned a reward of 2 if the largest square occupied a corner. But why 2 and not 5? That's the question I was asking myself.
+
+Given my previous experience with hyperparameter optimization in Machine Learning and Deep Learning, I decided to apply a similar approach to find the most effective weights for each reward in the total reward calculation. To achieve this, I leveraged the Optuna library, which conducted 25 games for each combination of weights, returning the average score for that particular set. After 100 iterations exploring different weight combinations, the library provided the best weights it had identified. For instance, in my case: 
+```
+{'border':0.96, 'biggest_adjacents':0.81, 'future_merges':0.39, 'empty_cells':0.45, 'full_line':0.51, 'weighted_sum':0.14}
+```
+
+These optimizations resulted in these final best scores over 100 games: 
 ![RL V2 Background OK](https://github.com/Bedeux/2048_IA/assets/77120351/7b8b9331-c38d-4838-befe-2b05bf6a7cfe)
