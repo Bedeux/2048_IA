@@ -19,101 +19,149 @@ def test_reset():
     assert np.count_nonzero(board.grid) == 2
 
 
-def test_add_random_tile():
+def test__add_random_tile():
     board = Board(seed=0)
     board.grid[:] = 0
-    board.add_random_tile()
+    board._add_random_tile()
     assert np.count_nonzero(board.grid) == 1
     assert np.isin(board.grid[board.grid != 0], [1, 2]).all()
 
 
-def test_move_left_simple():
+def test__move_left_simple():
     """Test simple de déplacement vers la gauche sur une seule ligne, sans fusion"""
     board = Board()
     board.grid = np.array([[8, 0, 0, 5]], dtype=board.grid.dtype)
-    board.move_left()
+    board._move_left()
     expected = np.array([[8, 5, 0, 0]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 
-def test_move_left_merge():
+def test__move_left_merge():
     """Test fusion simple de tuiles identiques vers la gauche sur une seule ligne"""
     board = Board()
     board.grid = np.array([[0, 10, 10, 0]], dtype=board.grid.dtype)
-    board.move_left()
+    board._move_left()
     expected = np.array([[11, 0, 0, 0]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 
-def test_move_left_double_merge():
+def test__move_left_double_merge():
     """Test double fusion vers la gauche sur une seule ligne"""
     board = Board()
     board.grid = np.array([[13, 13, 13, 13]], dtype=board.grid.dtype)
-    board.move_left()
+    board._move_left()
     expected = np.array([[14, 14, 0, 0]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 
-def test_move_left_nothing():
+def test__move_left_nothing():
     """Test double fusion vers la droite sur une seule ligne (6,6,6,6 → 0,0,7,7)"""
     board = Board()
     board.grid = np.array([[8, 11, 10, 13]], dtype=board.grid.dtype)
-    board.move_right()
+    board._move_right()
     expected = np.array([[8, 11, 10, 13]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 
-def test_move_right_simple():
+def test__move_right_simple():
     """Test simple de déplacement vers la droite sur une seule ligne, sans fusion"""
     board = Board()
     board.grid = np.array([[0, 12, 0, 5]], dtype=board.grid.dtype)
-    board.move_right()
+    board._move_right()
     expected = np.array([[0, 0, 12, 5]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 
-def test_move_right_merge():
+def test__move_right_merge():
     """Test fusion simple de tuiles identiques vers la droite sur une seule ligne"""
     board = Board()
     board.grid = np.array([[11, 0, 11, 0]], dtype=board.grid.dtype)
-    board.move_right()
+    board._move_right()
     expected = np.array([[0, 0, 0, 12]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 
-def test_move_right_double_merge():
+def test__move_right_double_merge():
     """Test double fusion vers la droite sur une seule ligne (6,6,6,6 → 0,0,7,7)"""
     board = Board()
     board.grid = np.array([[6, 6, 6, 6]], dtype=board.grid.dtype)
-    board.move_right()
+    board._move_right()
     expected = np.array([[0, 0, 7, 7]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 
-def test_move_right_nothing():
+def test__move_right_nothing():
     """Test double fusion vers la droite sur une seule ligne (6,6,6,6 → 0,0,7,7)"""
     board = Board()
     board.grid = np.array([[2, 5, 4, 7]], dtype=board.grid.dtype)
-    board.move_right()
+    board._move_right()
     expected = np.array([[2, 5, 4, 7]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 
-def test_move_up():
+def test__move_up():
     """Test des déplacements vers le haut (gauche transposée)"""
     board = Board()
     board.grid = np.array([[4, 0, 2, 0], [1, 5, 0, 0], [1, 2, 0, 2], [2, 2, 2, 0]], dtype=board.grid.dtype)
-    board.move_up()
+    board._move_up()
     expected = np.array([[4, 5, 3, 2], [2, 3, 0, 0], [2, 0, 0, 0], [0, 0, 0, 0]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 
-def test_move_down():
+def test__move_down():
     """Test des déplacements vers le bas (droite transposée)"""
     board = Board()
     board.grid = np.array([[8, 0, 7, 0], [1, 10, 9, 0], [1, 2, 7, 1], [2, 2, 9, 0]], dtype=board.grid.dtype)
-    board.move_down()
+    board._move_down()
     expected = np.array([[0, 0, 7, 0], [8, 0, 9, 0], [2, 10, 7, 0], [2, 3, 9, 1]], dtype=board.grid.dtype)
+    assert np.array_equal(board.grid, expected)
+
+
+def test_move_0(monkeypatch):
+    """Test déplacement vers le haut via move()"""
+    board = Board()
+    board.grid = np.array([[4, 5, 0, 1], [12, 5, 1, 0], [10, 2, 3, 0], [0, 2, 5, 0]], dtype=board.grid.dtype)
+    monkeypatch.setattr(
+        Board, "_add_random_tile", lambda self: None
+    )  # Désactive la fonction `_add_random_tile` afin de pouvoir tester move()
+    board.move(0)  # Up
+    expected = np.array([[4, 6, 1, 1], [12, 3, 3, 0], [10, 0, 5, 0], [0, 0, 0, 0]], dtype=board.grid.dtype)
+    assert np.array_equal(board.grid, expected)
+
+
+def test_move_1(monkeypatch):
+    """Test déplacement vers le bas via move()"""
+    board = Board()
+    board.grid = np.array([[4, 5, 0, 1], [12, 5, 1, 0], [10, 2, 3, 0], [0, 2, 5, 0]], dtype=board.grid.dtype)
+    monkeypatch.setattr(
+        Board, "_add_random_tile", lambda self: None
+    )  # Désactive la fonction `_add_random_tile` afin de pouvoir tester move()
+    board.move(1)  # Up
+    expected = np.array([[0, 0, 0, 0], [4, 0, 1, 0], [12, 6, 3, 0], [10, 3, 5, 1]], dtype=board.grid.dtype)
+    assert np.array_equal(board.grid, expected)
+
+
+def test_move_2(monkeypatch):
+    """Test déplacement vers la gauche via move()"""
+    board = Board()
+    board.grid = np.array([[4, 5, 0, 1], [12, 5, 1, 0], [10, 2, 3, 1], [0, 2, 2, 0]], dtype=board.grid.dtype)
+    monkeypatch.setattr(
+        Board, "_add_random_tile", lambda self: None
+    )  # Désactive la fonction `_add_random_tile` afin de pouvoir tester move()
+    board.move(2)  # Left
+    expected = board.grid = np.array([[4, 5, 1, 0], [12, 5, 1, 0], [10, 2, 3, 1], [3, 0, 0, 0]], dtype=board.grid.dtype)
+    assert np.array_equal(board.grid, expected)
+
+
+def test_move_3(monkeypatch):
+    """Test déplacement vers la droite via move()"""
+    board = Board()
+    board.grid = np.array([[4, 5, 0, 1], [12, 5, 1, 0], [10, 2, 3, 1], [0, 2, 2, 0]], dtype=board.grid.dtype)
+    monkeypatch.setattr(
+        Board, "_add_random_tile", lambda self: None
+    )  # Désactive la fonction `_add_random_tile` afin de pouvoir tester move()
+    board.move(3)  # Right
+    expected = np.array([[0, 4, 5, 1], [0, 12, 5, 1], [10, 2, 3, 1], [0, 0, 0, 3]], dtype=board.grid.dtype)
     assert np.array_equal(board.grid, expected)
 
 

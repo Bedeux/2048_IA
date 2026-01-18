@@ -10,19 +10,28 @@ class Board:
     0 = case vide, 1 = 2, 2 = 4, 3 = 8, etc
     Ce choix a été fait pour des raisons de performances
 
-    Les déplacements ont été précalculés et stockés dans des 'lookup', ce qui est beaucoup plus performant
+    Les déplacements ont été précalculés et stockés dans des 'lookup' pour des raisons de performance
     """
 
-    __slots__ = ("grid", "lookup_left", "lookup_right", "lookup_score", "rng", "total_score")
+    __slots__ = ("grid", "_lookup_left", "_lookup_right", "_lookup_score", "_rng", "total_score", "_move_dispatch")
 
     def __init__(self, seed: int | None = None):
         assets_path = Path(__file__).parent / "assets"
-        self.lookup_left: np.ndarray = np.load(assets_path / "lookup_left.npy", mmap_mode="r")
-        self.lookup_right: np.ndarray = np.load(assets_path / "lookup_right.npy", mmap_mode="r")
-        self.lookup_score: np.ndarray = np.load(assets_path / "lookup_score.npy", mmap_mode="r")
-        self.rng: np.random.Generator = np.random.default_rng(seed)
+        self._lookup_left: np.ndarray = np.load(assets_path / "lookup_left.npy", mmap_mode="r")
+        self._lookup_right: np.ndarray = np.load(assets_path / "lookup_right.npy", mmap_mode="r")
+        self._lookup_score: np.ndarray = np.load(assets_path / "lookup_score.npy", mmap_mode="r")
+
+        self._rng: np.random.Generator = np.random.default_rng(seed)
         self.grid: np.ndarray = np.zeros((4, 4), dtype=np.uint8)
         self.total_score = 0
+
+        self._move_dispatch = (
+            self._move_up,  # 0
+            self._move_down,  # 1
+            self._move_left,  # 2
+            self._move_right,  # 3
+        )
+
         self.reset()  # Ajout des deux tuiles commme lors de la fin de partie
 
     def reset(self, start_tiles=2):
@@ -30,57 +39,60 @@ class Board:
         self.grid[:] = 0
         # self.total_score = 0
         for _ in range(start_tiles):
-            self.add_random_tile()
+            self._add_random_tile()
 
-    def move_left(self) -> np.ndarray:
+    def _move_left(self):
         """Déplacement vers la gauche"""
         g = self.grid
-
-        row_scores = self.lookup_score[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
+        row_scores = self._lookup_score[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
         self.total_score += np.sum(row_scores)
+        self.grid = self._lookup_left[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
 
-        self.grid = self.lookup_left[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
-        return self.grid
-
-    def move_right(self) -> np.ndarray:
+    def _move_right(self):
         """Déplacement vers la droite"""
         g = self.grid
-
-        row_scores = self.lookup_score[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
+        row_scores = self._lookup_score[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
         self.total_score += np.sum(row_scores)
+        self.grid = self._lookup_right[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
 
-        self.grid = self.lookup_right[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
-        return self.grid
-
-    def move_up(self) -> np.ndarray:
+    def _move_up(self):
         """Déplacement vers le haut"""
         gT = self.grid.T
-
-        row_scores = self.lookup_score[gT[:, 0], gT[:, 1], gT[:, 2], gT[:, 3]]
+        row_scores = self._lookup_score[gT[:, 0], gT[:, 1], gT[:, 2], gT[:, 3]]
         self.total_score += np.sum(row_scores)
+        self.grid = self._lookup_left[gT[:, 0], gT[:, 1], gT[:, 2], gT[:, 3]].T
 
-        new_T = self.lookup_left[gT[:, 0], gT[:, 1], gT[:, 2], gT[:, 3]]
-        self.grid = new_T.T
-        return self.grid
-
-    def move_down(self) -> np.ndarray:
+    def _move_down(self):
         """Déplacement vers le bas"""
         gT = self.grid.T
-
-        row_scores = self.lookup_score[gT[:, 0], gT[:, 1], gT[:, 2], gT[:, 3]]
+        row_scores = self._lookup_score[gT[:, 0], gT[:, 1], gT[:, 2], gT[:, 3]]
         self.total_score += np.sum(row_scores)
+        self.grid = self._lookup_right[gT[:, 0], gT[:, 1], gT[:, 2], gT[:, 3]].T
 
-        new_T = self.lookup_right[gT[:, 0], gT[:, 1], gT[:, 2], gT[:, 3]]
-        self.grid = new_T.T
-        return self.grid
+    def move(self, direction: int):
+        """
+        Applique un déplacement sur le plateau en fonction de la direction fournie
+        La direction est codée sous forme d'entier : 0=up, 1=down, 2=left, 3=right
+
+        Après l'application du déplacement, une nouvelle tuile aléatoire est ajoutée à la grille
+
+        Attention
+        ---------
+        Pour des raisons de performance, cette méthode ne vérifie pas si le plateau a réellement
+        changé avant d'ajouter la nouvelle tuile
+        L'utilisation préalable de la méthode `get_available_moves_indices()` est donc recommandé
+        afin d'identifier en amont les déplacements valides
+        """
+        self._move_dispatch[direction]()
+        self._add_random_tile()
 
     def get_score(self) -> int:
         return int(self.total_score)
 
-    def add_random_tile(self) -> np.ndarray:
+    def _add_random_tile(self) -> np.ndarray:
         """
-        Ajoute une nouvelle tuile aléatoire sur une case vide (0) de la grille log2.
-        Retourne uniquement la nouvelle grille.
+        Ajoute une nouvelle tuile aléatoire sur une case vide (0) de la grille log2
+        Retourne uniquement la nouvelle grille
         """
         # Crée un tableau 1D des indices vides
         empty_indices: np.ndarray = np.flatnonzero(self.grid == 0)
@@ -88,10 +100,10 @@ class Board:
             return self.grid  # grille pleine
 
         # Tirage d'une position aléatoire
-        pos: int = int(empty_indices[self.rng.integers(len(empty_indices))])
+        pos: int = int(empty_indices[self._rng.integers(len(empty_indices))])
 
         # Nouvelle tuile 2 (log2=1) ou 4 (log2=2)
-        self.grid.flat[pos] = 1 if self.rng.random() < 0.9 else 2
+        self.grid.flat[pos] = 1 if self._rng.random() < 0.9 else 2
 
         return self.grid
 
@@ -103,10 +115,10 @@ class Board:
         """
         moves = []
         dirs = [
-            (self.lookup_left, True, 0),  # UP
-            (self.lookup_right, True, 1),  # DOWN
-            (self.lookup_left, False, 2),  # LEFT
-            (self.lookup_right, False, 3),  # RIGHT
+            (self._lookup_left, True, 0),  # UP
+            (self._lookup_right, True, 1),  # DOWN
+            (self._lookup_left, False, 2),  # LEFT
+            (self._lookup_right, False, 3),  # RIGHT
         ]
 
         for lookup, is_col, idx in dirs:
