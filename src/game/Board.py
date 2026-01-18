@@ -3,6 +3,16 @@ from pathlib import Path
 
 
 class Board:
+    """
+    Plateau de jeu 2048
+
+    La grille est stockée en représentation log2 :
+    0 = case vide, 1 = 2, 2 = 4, 3 = 8, etc
+    Ce choix a été fait pour des raisons de performances
+
+    Les déplacements ont été précalculés et stockés dans des 'lookup', ce qui est beaucoup plus performant
+    """
+
     __slots__ = ("grid", "lookup_left", "lookup_right", "lookup_score", "rng", "total_score")
 
     def __init__(self, seed: int | None = None):
@@ -11,7 +21,7 @@ class Board:
         self.lookup_right: np.ndarray = np.load(assets_path / "lookup_right.npy", mmap_mode="r")
         self.lookup_score: np.ndarray = np.load(assets_path / "lookup_score.npy", mmap_mode="r")
         self.rng: np.random.Generator = np.random.default_rng(seed)
-        self.grid: np.ndarray = np.zeros((4, 4), dtype=np.int32)  # TODO Voir quoi prendre j'avais avant dtype=np.uint8
+        self.grid: np.ndarray = np.zeros((4, 4), dtype=np.uint8)
         self.total_score = 0
         self.reset()  # Ajout des deux tuiles commme lors de la fin de partie
 
@@ -24,18 +34,22 @@ class Board:
 
     def move_left(self) -> np.ndarray:
         """Déplacement vers la gauche"""
-        row_scores = self.lookup_score[self.grid[:, 0], self.grid[:, 1], self.grid[:, 2], self.grid[:, 3]]
+        g = self.grid
+
+        row_scores = self.lookup_score[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
         self.total_score += np.sum(row_scores)
 
-        self.grid = self.lookup_left[self.grid[:, 0], self.grid[:, 1], self.grid[:, 2], self.grid[:, 3]]
+        self.grid = self.lookup_left[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
         return self.grid
 
     def move_right(self) -> np.ndarray:
         """Déplacement vers la droite"""
-        row_scores = self.lookup_score[self.grid[:, 0], self.grid[:, 1], self.grid[:, 2], self.grid[:, 3]]
+        g = self.grid
+
+        row_scores = self.lookup_score[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
         self.total_score += np.sum(row_scores)
 
-        self.grid = self.lookup_right[self.grid[:, 0], self.grid[:, 1], self.grid[:, 2], self.grid[:, 3]]
+        self.grid = self.lookup_right[g[:, 0], g[:, 1], g[:, 2], g[:, 3]]
         return self.grid
 
     def move_up(self) -> np.ndarray:
@@ -81,10 +95,34 @@ class Board:
 
         return self.grid
 
+    def get_available_moves_indices(self):
+        """
+        Retourne une liste avec les indices des mouvements possibles :
+        0=up, 1=down, 2=left, 3=right
+        Fonction proposé par ChatGPT (plus performante)
+        """
+        moves = []
+        dirs = [
+            (self.lookup_left, True, 0),  # UP
+            (self.lookup_right, True, 1),  # DOWN
+            (self.lookup_left, False, 2),  # LEFT
+            (self.lookup_right, False, 3),  # RIGHT
+        ]
+
+        for lookup, is_col, idx in dirs:
+            for i in range(4):
+                line = self.grid[:, i] if is_col else self.grid[i, :]
+                lkup = lookup[line[0], line[1], line[2], line[3]]
+                if any(line[j] != lkup[j] for j in range(4)):
+                    moves.append(idx)
+                    break
+
+        return moves
+
     def is_game_over(self) -> bool:
         """
-        Vérifie si la partie est terminée pour une grille log2 (uint8).
-        Retourne True si plus aucun mouvement possible.
+        Vérifie si la partie est terminée
+        Retourne True si aucun mouvement n'est possible
         """
         g: np.ndarray = self.grid
 
@@ -105,15 +143,15 @@ class Board:
 
     def get_real_grid_values(self):
         """
-        Transforme une grille de puissances de 2 en valeurs réelles.
+        Fonction d'exploration permettant de transforme la grille log2 en valeurs réelles
         Exemple : 1 -> 2, 3 -> 8, etc.
+        Cela permet d'avoir un apercu de la vraie grille
         """
         real_grid = self.grid.astype(np.int32)
         return np.where(real_grid > 0, np.power(2, real_grid), 0)
 
-    def get_max_tile(self):
+    def get_highest_tile_log2(self):
         """
-        Recupere la valeur la valeur de la plus grande tuile
+        Recupere la valeur de la plus grande tuile
         """
-        # TODO refaire sur grid et convertir la plus grande valeur en np power a la place de tout convertir
-        return np.max(self.get_real_grid_values())
+        return int(self.grid.max())

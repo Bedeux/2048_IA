@@ -117,6 +117,27 @@ def test_move_down():
     assert np.array_equal(board.grid, expected)
 
 
+def test_get_available_moves():
+    """Test des déplacements vers le bas (droite transposée)"""
+    board = Board()
+    board.grid = np.array([[0, 0, 0, 0], [8, 0, 0, 0], [2, 10, 7, 9], [4, 3, 9, 1]], dtype=board.grid.dtype)
+    assert board.get_available_moves_indices() == [0, 3]  # Up + Right
+
+
+def test_get_available_moves_all():
+    """Test des déplacements vers le bas (droite transposée)"""
+    board = Board()
+    board.grid = np.array([[0, 0, 0, 2], [8, 0, 0, 0], [2, 10, 7, 9], [2, 3, 9, 1]], dtype=board.grid.dtype)
+    assert board.get_available_moves_indices() == [0, 1, 2, 3]  # Up + Down + Left + Right
+
+
+def test_get_available_moves_none():
+    """Test des déplacements vers le bas (droite transposée)"""
+    board = Board()
+    board.grid = np.array([[7, 8, 9, 10], [3, 4, 5, 6], [11, 12, 13, 14], [1, 2, 3, 4]], dtype=board.grid.dtype)
+    assert board.get_available_moves_indices() == []
+
+
 def test_game_over_true():
     board = Board()
     board.grid = np.array([[1, 2, 1, 2], [2, 1, 2, 1], [1, 2, 1, 2], [2, 1, 2, 1]], dtype=board.grid.dtype)
