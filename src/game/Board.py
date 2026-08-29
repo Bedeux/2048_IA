@@ -1,5 +1,6 @@
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 
 class Board:
@@ -13,7 +14,7 @@ class Board:
     Les déplacements ont été précalculés et stockés dans des 'lookup' pour des raisons de performance
     """
 
-    __slots__ = ("grid", "_lookup_left", "_lookup_right", "_lookup_score", "_rng", "total_score", "_move_dispatch")
+    __slots__ = ("_lookup_left", "_lookup_right", "_lookup_score", "_move_dispatch", "_rng", "grid", "total_score")
 
     def __init__(self, seed: int | None = None):
         assets_path = Path(__file__).parent / "assets"
@@ -34,10 +35,22 @@ class Board:
 
         self.reset()  # Ajout des deux tuiles commme lors de la fin de partie
 
+    def clone(self):
+        """Clonage optimisé de l'objet courant"""
+        b = Board.__new__(Board)
+        b._lookup_left = self._lookup_left
+        b._lookup_right = self._lookup_right
+        b._lookup_score = self._lookup_score
+        b.grid = self.grid.copy()
+        b.total_score = self.total_score
+        b._move_dispatch = (b._move_up, b._move_down, b._move_left, b._move_right)
+        b._rng = np.random.default_rng(self._rng.integers(2**63))
+        return b
+
     def reset(self, start_tiles=2):
         """Réinitialise la grille pour pouvoir simuler une autre partie sans devoir recréer d'objet"""
         self.grid[:] = 0
-        # self.total_score = 0
+        self.total_score = 0
         for _ in range(start_tiles):
             self._add_random_tile()
 

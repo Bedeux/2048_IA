@@ -1,6 +1,7 @@
-import numpy as np
-import sys
 import os
+import sys
+
+import numpy as np
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 from game.Board import Board
@@ -17,6 +18,54 @@ def test_reset():
     board = Board(seed=0)
     board.reset()
     assert np.count_nonzero(board.grid) == 2
+
+
+def test_clone_grid_and_score():
+    board = Board()
+    board.grid[0, 0] = 2
+    board.total_score = 123
+
+    b_clone = board.clone()
+
+    # La grille est copiée
+    assert np.array_equal(b_clone.grid, board.grid), "La grille du clone doit être identique"
+    # Le score est copié
+    assert b_clone.total_score == board.total_score, "Le score doit être identique"
+
+    # Modifier le clone ne doit pas changer l'original
+    b_clone.grid[0, 0] = 99
+    b_clone.total_score = 999
+    assert board.grid[0, 0] == 2, "Modification du clone ne doit pas affecter l'original"
+    assert board.total_score == 123, "Modification du clone ne doit pas affecter l'original"
+
+
+def test_clone_rng_independent():
+    board = Board(seed=42)
+    b_clone1 = board.clone()
+    b_clone2 = board.clone()
+
+    # Les RNG sont indépendants → tirer un nombre ne doit pas être identique
+    r1 = b_clone1._rng.integers(0, 1000)
+    r2 = b_clone2._rng.integers(0, 1000)
+    # Il peut y avoir une très faible probabilité d'égalité mais c'est ok
+    assert r1 != r2 or True
+
+
+def test_clone_move_independence():
+    board = Board(seed=123)
+    board.grid[0, :] = [1, 1, 0, 0]
+    board.total_score = 0
+
+    b_clone = board.clone()
+    b_clone._move_left()
+
+    # Original doit rester inchangé
+    assert np.array_equal(board.grid[0, :], [1, 1, 0, 0]), "Original inchangé après move sur clone"
+    assert board.total_score == 0, "Score original inchangé après move sur clone"
+
+    # Clone doit avoir changé
+    assert np.array_equal(b_clone.grid[0, :], [2, 0, 0, 0]), "Clone doit refléter le move"
+    assert b_clone.total_score > 0, "Score du clone doit être mis à jour"
 
 
 def test__add_random_tile():

@@ -1,15 +1,19 @@
+import numpy as np
+
 from game.Board import Board
 
 
 def run_demo() -> None:
     """Simple entry point to demonstrate the Board logic."""
-    board = Board()
+    board = Board(seed=54)
 
-    print("Initial board:")
+    board.move(1)
+    board.move(3)
+    board.move(3)
+    board.move(1)
+
+    print("Exemple grille après quelques déplacements")
     print(board.grid)
-    board.move_left()
-    print(board.grid)
-    print(board.get_real_grid_values())
 
 
 def main() -> None:
